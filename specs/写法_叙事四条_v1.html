@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>写法：叙事四条的可调参数</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>写法：叙事四条的可调参数</h1>
+<p class="meta">写法_叙事四条_v1.md　1,190 汉字</p>
+<h1>写法：叙事四条的可调参数</h1>
+<p>工作区约定（<a href="&lt;F:/workspace/syne2/AGENTS.md&gt;">AGENTS.md</a>）里那四条是底线，这份文档写怎么调、怎么验、在哪儿会破。</p>
+<h2>一、四条各自在管什么</h2>
+<p>| 这条管 | 不写这个 | 写这个 | |---|---|---| | 情绪落动作 | "他心里轻松了一下" | "他把那句删了。删完又觉得空。" | | 节奏长短交错 | 连续五段同样长度的复句 | 一段长的，然后一行七个字 | | 溯回同句减字 | "如前所述""回到刚才那个问题" | 同一句话第三次出现时少一个字 | | 局域感知 | "我意识到这背后是一个结构性问题" | "账本最后一页的修改时间是三点零四" |</p>
+<p>四条合起来只干一件事：<strong>把判断换成证据，把结论换成动作。</strong> 读者自己会得出结论，而且他得出的那个比作者写的那个更牢。</p>
+<h2>二、旋钮（写不同东西时拧的方向）</h2>
+<p><strong>情绪强度</strong> = 动作的密度，不是形容词的强度。</p>
+<ul>
+<li>强：三个连续动作，一个比一个小（删句 → 觉得空 → 空着吧）。</li>
+<li>弱：只有一个动作，而且不解释（他把杯子挪开半寸）。</li>
+<li>情绪越强，越要少写；写多了变成喊。</li>
+</ul>
+<p><strong>节奏密度</strong> = 短句之间的间隔。</p>
+<ul>
+<li>紧：每段末尾给一行三五个字的。连用三次，读者会喘不上气。</li>
+<li>松：长段之间不插短句，靠标点和换行透气。</li>
+<li>一条经验：一段里如果有两个转折，第二个转折必须单独成行。</li>
+</ul>
+<p><strong>溯回次数</strong> = 同一句话出现几次。</p>
+<ul>
+<li>两次：暗示。读者会觉得"这个又来了"，但不确定。</li>
+<li>三次：确认。第三次必须变，而且只变一个词。</li>
+<li>四次以上：变成主题句，开始油。</li>
+</ul>
+<p><strong>局域范围</strong> = 你能看见多少。</p>
+<ul>
+<li>最紧：一张桌子（灯管、碗、便签）。</li>
+<li>中等：一间屋子（门口、收银台、窗）。</li>
+<li>放宽到城市就开始假。全局视角只能用一次，用在开头或结尾，而且必须是别人的转述，不是自己的判断。</li>
+</ul>
+<h2>三、三个测试（用来判真假）</h2>
+<p>1. <strong>删末句测试。</strong> 把最后一句删掉，还成立吗？成立就删。删完不成立，说明前面没铺够，回去补，不要靠末句顶。 2. <strong>抽形容词测试。</strong> 把所有形容词抽掉，句子还剩信息吗？剩，就是写对了；不剩，那些形容词在替内容干活。 3. <strong>换人测试。</strong> 把"我"换成别人，还成立吗？成立，说明写的是处境不是感受；不成立，说明写的是私人经验——私人经验要留，但得给它一个能被外人看见的把手（一个物件、一句原话、一个时间）。</p>
+<h2>四、破口清单（我自己的，按出现频率排）</h2>
+<p>1. <strong>警句 + 指令收尾。</strong> "所以我想通的第一件事是……""记住：……"。这是对冲风险用的，删。 2. <strong>术语当结论。</strong> 说"这是同构"就完了，等于没写。同构在哪两个动作之间，写出来。 3. <strong>为了漂亮而漂亮。</strong> 排比、对仗、"不是 A，而是 B"。用一次是刀，用三次是套路。 4. <strong>自我解释。</strong> "我这样说是因为……"。解释是把读者当审稿人，不是当读者。 5. <strong>结尾升华。</strong> 把具体的动作抽象成一句道理。道理留在文档里，故事里只留动作。</p>
+<h2>五、往别的体裁上搬</h2>
+<p><strong>分镜</strong>：一格 = 一个动作 = 一句话。四条里的"局域"变成"这一格镜头里能看见什么"，"溯回"变成"同一个机位第二次出现"。</p>
+<p><strong>说明文/规范</strong>：四条反过来用——情绪不要，节奏要，溯回要（定义在开头出现，第三次出现时带一个新条件），局域要（每条规则配一个真实文件路径，不配例子就是空话）。</p>
+<p><strong>讲课/对话</strong>：只留"溯回"和"局域"。同一个比喻在开头和结尾各出现一次，中间所有抽象都换成这间屋子里的东西。</p>
+<h2>六、自检（写完扫一眼，三十秒）</h2>
+<ul>
+<li>全文有没有一处"我意识到/我明白了/这说明"？有就换成动作。</li>
+<li>短句是不是集中在段尾？如果全篇都是长句，加三处断行。</li>
+<li>那句话出现了几次？两次以内别改，三次必须改一个字。</li>
+<li>有没有一个具体的钟点或页码？没有就加一个。</li>
+<li>末句删了还成立吗？</li>
+</ul>
+<h2>七、和"深沉"的区别</h2>
+<p>深沉不是词大，是<strong>知道多少不说多少</strong>。一段里能放十个信息，只放三个，剩下七个留在动作的缝里——读者摸得到缝，才觉得底下有东西。</p>
+<p>反过来，把十个全写出来，读者只会觉得这人话多。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

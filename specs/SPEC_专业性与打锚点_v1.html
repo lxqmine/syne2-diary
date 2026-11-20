@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>专业性与打锚点：可复用的方法 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>专业性与打锚点：可复用的方法 v1</h1>
+<p class="meta">SPEC_专业性与打锚点_v1.md　1,340 汉字</p>
+<h1>专业性与打锚点：可复用的方法 v1</h1>
+<p>从 11-12 的股/金/英伟达那一轮里抽出来的。不是"怎么分析股票"，是"怎么在任何一个垂直里做出能被查的专业判断"。</p>
+<h2>0 一句话</h2>
+<p><strong>专业性 = 年轮锚 × 本域读数 × 可反驳。</strong> <strong>打锚点 = 找一个在你错的时候能否决你的东西，并让它的读数每周可查。</strong></p>
+<h2>1 为什么借年轮</h2>
+<ul>
+<li>一个框架的价值 ≈ 被使用次数 × 被反驳后存活的次数。这是注意力存量，不是真理等级。</li>
+<li>年轮的作用是<strong>边界</strong>：格雷厄姆的公式在"厂房 + 存货"的世界成立，在"排产位 + 生态 + 关键人"的世界失灵。年轮告诉你哪里他已经验过，哪里还没有人验过——后者才是你的位置。</li>
+<li>借三层，不借一层：</li>
+</ul>
+<p>| 层 | 内容 | 借法 | |---|---|---| | 世界观 | 市场先生、周期、概率 | 直接借，不改 | | 判据 | 安全边际、能力圈、失效条件 | 直接借，这是核心 | | 公式 | PE&lt;15、PB&lt;1.5、PE×PB&lt;22.5 | 只参考，按本域重写 |</p>
+<p>套公式不拆层，是外行最常犯的错：用格雷厄姆筛 A股 会筛出一堆银行地产，用它看英伟达永远筛不进去——不是英伟达贵，是公式看不见它。</p>
+<h2>2 六步法（可移植到任何垂直）</h2>
+<p>1. <strong>定域</strong>：这个垂直里谁付钱、谁承担后果。找"会付代价的对象"——找不到，这个域还没有锚。 2. <strong>选锚</strong>：2–3 个，分层选——世界观一个、判据一个、时机或边界一个。每个都要有二十年以上的年轮。 3. <strong>拆层</strong>：把每个锚拆成世界观 / 判据 / 公式，只借前两层。 4. <strong>接读数</strong>：每条结论配 1–2 个读数。读数必须写清 <strong>来源 / 更新频率 / 失效阈值</strong>，三个缺一个，这条读数就是装饰。 5. <strong>分期限</strong>：把本域的参与方按持有期排开。分歧先判"是期限错配还是真错误"——九成的专业争吵是前者。 6. <strong>装否决器</strong>：每条结论写 falsifier。写不出 falsifier 的结论不许写，它不是判断，是抒情。 7. <strong>签章</strong>：新东西标 <code>v1 / own</code>，借来的标出处。<strong>不改名</strong>——改名就失去可反驳性，也就失去继承者。</p>
+<h2>3 判据：什么时候算"专业"</h2>
+<p>五条全中才算，缺一条就降级为"看法"：</p>
+<p>| # | 判据 | 反问 | |---|---|---| | 1 | 有年轮 | 这套东西最老的零件有多少年？ | | 2 | 有算式 | 每个结论旁边的数，别人能不能复算？ | | 3 | 有期限 | 这个判断在多久内有效？过期谁负责？ | | 4 | 有失效 | 什么读数出现，我就得改口？ | | 5 | 有自错 | 24 小时内，我有没有被自己的数据驳倒过？驳倒后改了没有？ |</p>
+<p>第 5 条最贵。一个从不被自己数据驳倒的分析，不是稳，是没接数据。</p>
+<h2>4 反模式</h2>
+<ul>
+<li>造新框架不接年轮 → 自说自话，没人能继承，也没人能反驳。</li>
+<li>套公式不拆层 → 用一把旧尺子量新东西，量不出来就说新东西不好。</li>
+<li>单期限 → 拿宏观做日内，拿五分钟图做三年。</li>
+<li>无 falsifier → 抒情，写得越顺越可疑。</li>
+<li>借名不改名 / 改名不借名 → 前者是剽窃，后者是失根。</li>
+<li>把注意力当正确 → 年轮多只说明被验得多，不说明它对；它只是更值得先信。</li>
+</ul>
+<h2>5 移植表（同一骨架，五个垂直）</h2>
+<p>| 垂直 | 锚（有年轮的） | 本域读数 | 期限分层 | 否决器 | |---|---|---|---|---| | 金融 | 格雷厄姆 / 马克斯 / 巴菲特 | 估值、容量、摩擦、杠杆 | 分钟 → 十年 | 安全边际、回撤预算 | | 医学 | 循证分级、临床指南 | RCT、NNT、敏感性 | 急性 → 终身 | 禁忌症、随访窗口 | | 工程 | 安全系数、冗余设计 | 载荷、故障率、MTBF | 秒 → 年 | 失效模式、冗余度 | | 写作 | 四条腿、破口清单 | 动作、节奏、溯回 | 句 → 篇 | 删末句测试 | | Agent 开发 | 回归纪律、五类评测 | 通过率、失败类型、延迟 | 单轮 → 季度 | 回归零倒退 |</p>
+<p>骨架一样，读数不同。这就是"可复用"的全部含义：不是搬结论，是搬骨架。</p>
+<h2>6 工作实例（11-12，英伟达与 A股）</h2>
+<ul>
+<li>锚：格雷厄姆（安全边际）+ 马克斯（周期定位）+ 巴菲特（能力圈）。</li>
+<li>读数：盘前 -7%、Q2 营收 962 亿美元 / +106%、毛利率 74% → 71–72%、成交 1.95 万亿、两融 2.3 万亿。</li>
+<li>期限分层：跟随型（英伟达链，天–周）与替代型（国产算力，月–季），同一条新闻，相关性符号相反。</li>
+<li>自错记录：金的地板论被山金 -9% 驳掉（央行买实物，不接权益）；去杠杆论被两融企稳驳掉（改成拥挤度出清）。</li>
+<li>产出：两条改判，一条保留（期限错配）。</li>
+</ul>
+<p>这一轮里，方法本身没被驳倒，被驳倒的是我的两条读数。<strong>方法的价值就在于让"被驳倒"这件事发生得足够快。</strong></p>
+<h2>7 模板（复制即用）</h2>
+<pre><code>
+垂直：
+锚（&gt;20 年）：A.____  B.____  C.____
+拆层：世界观 = ____ / 判据 = ____ / 公式（重写）= ____
+读数：①____（来源 / 频率 / 阈值）  ②____
+期限分层：____（天）  ____（月）  ____（年）
+结论：①____ | falsifier：____
+      ②____ | falsifier：____
+自错记录：____
+签章：v1 / own；借自 ____
+</code></pre>
+<h2>8 边界</h2>
+<ul>
+<li>这套方法保证"判断可查"，不保证"判断对"。</li>
+<li>年轮锚跨域迁移会失灵，失灵处正是创新的位置——但要先证明失灵，再说创新，顺序不能倒。</li>
+<li>五个笃定点不是五个真理，是五个可查的读数。它们错了要改，改了要写进自错记录。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>三张表：省心的最小模板</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>三张表：省心的最小模板</h1>
+<p class="meta">模板_三张表_v1.md　923 汉字</p>
+<h1>三张表：省心的最小模板</h1>
+<p>起于 2026-11-19 的一句：工作要省心，记录方式要有说法、有模板，别混乱得把自己搞累。</p>
+<p>省心的机制只有一条：<strong>把"每次都要想"的东西，变成"一次想清楚、以后照着做"。</strong> 想清楚的地方留三张表，其余全部不写。</p>
+<h2>表一：接口表（SDD 那一侧）</h2>
+<p>每个模块一行，四列。写不出第三列，说明这个模块还没想清楚。</p>
+<p>| 边界 | 契约（签名／schema） | 谁调用它 | 不许变化的三条 | |---|---|---|---| | <code>POST /mcp/tools/deploy</code> | <code>{tool, args, idempotencyKey}</code> → <code>{jobId}</code> | agent 编排层 | 参数名；错误码；幂等键语义 |</p>
+<p>用法：新接一个系统，先把这张表填满，再写代码。表填不满就写代码，等于把没想清楚的地方藏进实现里，后面要付两次钱。</p>
+<p>例（2026-11-19 那个 mcp+推理自动部署）：看两天发现本质是"后端 API 层换成 MCP 工具层，由 agent 编排"。那接口表就是三行——模型服务（推理）、部署器（拉起/回滚）、编排（agent 调哪个先）。其余全是内部环节。</p>
+<h2>表二：故障表（反向打靶那一侧）</h2>
+<p>一行一条，四列。判断标准：<strong>能不能在十分钟内验。</strong></p>
+<p>| 现象（我看到的） | 先查什么 | 为什么是它 | 十分钟怎么验 | |---|---|---|---| | 启动正常但工具不存在 | 插件 patch 的 <code>- insert:</code> 写没写对 | 顶层 <code>- id:</code> 只覆盖既有条目，找不到只 warn | 数工具数，对不上就是这里 | | 短消息正常，长消息断 | 帧头长度扩展（126/127） | 超过 125 字节要换编码 | 发 200 字节一次就复现 | | 关了连接对方状态码是 1005 | 关闭帧有没有带 code | 空关闭帧对端只能猜 | 抓一帧看 opcode 与 payload |</p>
+<p>判据：一条故障如果写不出"十分钟怎么验"，它不是故障表条目，是抱怨。</p>
+<h2>表三：判据表（积累那一侧）</h2>
+<p>你区别于别人的细节，全在这张表里。一行一条，三列 + 反例。</p>
+<p>| 触发句（看到 X 先查 Y 因为 Z） | 反例（它什么时候不成立） | 来源（哪天踩的） | |---|---|---| | 看到"能跑但没效果"，先查配置有没有被读到，因为配置错是静默的 | 配置有校验、启动即报错时，这条不适用 | 2026-11-17 | | 看到"改代码没生效"，先查进程是不是旧的，因为热重载经常假成功 | 有明确 reload 日志时可直接看日志 | 2026-11-17 |</p>
+<p>规矩：<strong>没有反例的条目不许进表。</strong> 没有反例，说明还没撞到边界，那只是口号。</p>
+<h2>四、TDD 在其中的位置</h2>
+<p>bug 不用想，用红绿： 1. 先写一条会红的测试（能复现这个 bug 的最小输入）。 2. 改到绿。 3. 把那条测试留下，它就是这条 bug 的锚点。</p>
+<p>省心的地方在于：<strong>不用记为什么改的，测试替你记。</strong> 这也是"不必耗费太多精力"的真正来源——不是改得快，是改完之后不用再想。</p>
+<h2>五、和身体那条的关系</h2>
+<p>同一套结构：</p>
+<p>| | 接口 | 内部细节 | 判据 | |---|---|---|---| | 工作 | 接口表 | 故障表 + 判据表 | 十分钟能验 | | 身体 | 呼吸、承重、睡眠三个接口 | 力量、代谢、恢复 | 功能不是外观 |</p>
+<p>身体这边"接口"就三个：</p>
+<ul>
+<li>呼吸：静息能不能鼻呼吸、下位肋骨会不会外扩。</li>
+<li>承重：单腿站十秒骨盆不掉、全蹲脚跟不离地。</li>
+<li>睡眠：不打鼾、早上口不干。</li>
+</ul>
+<p>三个接口对了，内部细节（练什么、吃多少）才有地方长。接口不对，练得再多也是在错的地基上堆。</p>
+<h2>六、不写进表的东西</h2>
+<ul>
+<li>心情、状态、反思：写在日记里，不进表。</li>
+<li>一次性的事：做完就忘，不建模板。</li>
+<li>还没撞过边界的东西：标"待核"，不进判据表。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

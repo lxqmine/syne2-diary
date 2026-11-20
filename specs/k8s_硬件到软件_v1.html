@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>k8s 从硬件到软件：一条链走到底</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>k8s 从硬件到软件：一条链走到底</h1>
+<p class="meta">k8s_硬件到软件_v1.md　1,821 汉字</p>
+<h1>k8s 从硬件到软件：一条链走到底</h1>
+<blockquote>一句话：<strong>k8s 不碰硬件。</strong> 它只维护一份"期望状态"，真正碰硬件的是三层——设备驱动、容器运行时、CNI/CSI。</blockquote>
+<blockquote>所以"k8s 怎么和硬件协同"这个问题，答案不在 k8s 里，在它下面那三层，以及它和那三层之间的几个交接点上。</blockquote>
+<p>---</p>
+<h2>〇、整条链，七个交接点</h2>
+<pre><code>
+硬件（CPU/内存/网卡/盘/GPU）
+  ↓ ① UEFI/ACPI → 内核 → 驱动 → udev        ← 设备"出现"
+内核抽象（cgroup v2 / namespace / NUMA / /dev）
+  ↓ ② kubelet 采集 Capacity，扣掉 reserved 得 Allocatable   ← 资源"记账"
+调度（scheduler 只看 Allocatable，看不见 NUMA 与型号）
+  ↓ ③ 调度结果写进 Pod.spec.nodeName                        ← 请求"落地"
+kubelet → CRI → containerd → runc
+  ↓ ④ runc 创建 namespace + cgroup，绑核/绑 NUMA             ← 资源"真分配"
+容器进程
+  ↓ ⑤ CNI 建 veth、配路由、下发 eBPF/iptables                ← 网络"接通"
+  ↓ ⑥ CSI attach/mount（云盘/本地盘/NVMe）                   ← 存储"挂上"
+  ↓ ⑦ 中断亲和、RPS/RFS、C-state、频率                       ← 性能"最后一公里"
+</code></pre>
+<p>七个交接点，每一个都能单独坏，而且坏的样子不一样。</p>
+<p>---</p>
+<h2>一、① 硬件出现：UEFI → 内核 → 驱动</h2>
+<p>| 环节 | 干了什么 | 坏了会看见 | |---|---|---| | UEFI/ACPI | 把设备树/PCIe 拓扑交给内核 | <code>dmesg</code> 里设备缺失、<code>lspci</code> 看不到 | | 内核模块 | 加载驱动（<code>mlx5_core</code>、<code>nvme</code>、<code>i40e</code>） | <code>dmesg</code> 报 <code>probe failed</code> | | udev | 建 <code>/dev</code> 节点、改权限、起命名规则 | 设备在但容器里看不到（device plugin 的活） | | 固件 | 网卡/RAID/NVMe 的微码 | 随机丢包、掉盘，重启就好 |</p>
+<p><strong>锚点</strong>：当我看到"宿主机 <code>lspci</code> 有、容器里没有"，先查 device plugin 与 udev 规则，因为 k8s 只认上报上来的资源名。</p>
+<p>---</p>
+<h2>二、② 资源记账：Capacity 与 Allocatable 不是一回事</h2>
+<pre><code>
+Allocatable = Capacity − kube-reserved − system-reserved − eviction-threshold
+</code></pre>
+<p>一台 64C/256G 的机器，<code>Allocatable</code> 常常是 60C/230G。这中间的差，是给 kubelet、容器运行时、内核、以及驱逐阈值留的。</p>
+<pre><code>
+kubectl describe node &lt;n&gt; | grep -A5 Allocatable
+</code></pre>
+<p><strong>这一层最常见的误解</strong>：以为"节点 256G，就能跑 256G 的 Pod"。调度器只信 <code>Allocatable</code>，超了就是 Pending，而 Pending 的原因写在 Events 里，不写在指标里。</p>
+<p><strong>锚点</strong>：当我看到 Pod 一直 Pending 而节点看起来"很空"，先看 <code>Allocatable</code> 与 <code>Requests</code> 的和，因为调度器算的是账，不是实际用量。</p>
+<p>---</p>
+<h2>三、③ 调度：它看不见硬件，只看得见"被上报的资源名"</h2>
+<p>调度器做的事只有三步：过滤（谁能放）、打分（放哪更好）、绑定（写 <code>nodeName</code>）。</p>
+<p>它<strong>不知道</strong>：</p>
+<ul>
+<li>这块 GPU 是 A100 还是 4090（只知道 <code>nvidia.com/gpu: 1</code>）</li>
+<li>这个 NUMA 节点上还剩多少内存（除非 Topology Manager 给了 hint）</li>
+<li>这台机器的网卡是 10G 还是 25G（除非打了 label）</li>
+</ul>
+<p>所以硬件信息进 k8s 的方式只有三种：<strong>resource 名（device plugin 上报）、label（人打的）、annotation（人写的）</strong>。</p>
+<p><strong>锚点</strong>：当我看到两个 Pod 被调到同一张卡或跨了 NUMA，先看 Topology Manager 的策略与 device plugin 的上报粒度，因为调度器没有硬件拓扑这个概念，只有"资源够不够"。</p>
+<p>---</p>
+<h2>四、④ 真分配：runc 那一下</h2>
+<p>kubelet 把 Pod 交给 CRI，containerd 拉起 runc，runc 做四件事：</p>
+<p>1. <code>clone</code> 出新进程（新 PID namespace） 2. 挂载（overlayfs 叠镜像层 + 卷） 3. 写 cgroup v2：<code>cpu.max</code>、<code>memory.max</code>、<code>io.max</code>、<code>cpuset.cpus</code> 4. <code>execve</code> 进容器</p>
+<p><strong>CPU 绑核就发生在第 3 步</strong>：<code>cpuManagerPolicy: static</code> 时，保证型 Pod 会拿到独占的 <code>cpuset.cpus</code>，其余用共享池。不配就是共享，共享就是抢。</p>
+<p><strong>锚点</strong>：当我看到"CPU 没用满但延迟抖"，先看 <code>cpuset.cpus</code> 与 <code>cpu.max</code> 的配额，因为配额是把双刃剑——它限流，也让你在 throttle 周期里排队。</p>
+<p>---</p>
+<h2>五、⑤ 网络：CNI 是硬件与 k8s 之间最薄的一层</h2>
+<pre><code>
+Pod eth0 ← veth pair → 宿主机 vethX → 路由/网桥/eBPF → 物理网卡 → 交换机
+</code></pre>
+<p>| 硬件相关项 | 为什么重要 | |---|---| | MTU | Pod 网络的 MTU 必须 ≤ 物理 MTU − 封装开销（VXLAN 减 50） | | offload（TSO/GSO/checksum） | 开了快，但 overlay 下可能算出错包 | | RSS 多队列 | 单队列 = 一个 CPU 扛所有软中断 | | SR-IOV | 绕过内核直接给 Pod 一个 VF，延迟低但热迁移没了 |</p>
+<p><strong>锚点</strong>：当我看到"小包正常、大包超时"，先量 Pod 网络的 MTU，因为 VXLAN 减 50 之后，1500 的包会被静默丢弃。</p>
+<p>---</p>
+<h2>六、⑥ 存储：attach 与 mount 是两件事</h2>
+<pre><code>
+CSI Controller：attach（云盘挂到节点）→ CSI Node：mount（挂到容器）
+</code></pre>
+<p>分开记的原因：attach 失败和 mount 失败，看到的完全是两种现象。attach 失败是"卷不在这个节点上"，mount 失败是"卷在但挂不上"（文件系统、权限、只读）。</p>
+<p><strong>锚点</strong>：当我看到 Pod 卡在 <code>ContainerCreating</code>，先看 CSI 的 Events 与 PV 的 <code>nodeAffinity</code>，因为跨可用区的卷永远 attach 不上。</p>
+<p>---</p>
+<h2>七、⑦ 最后一公里：中断与电源</h2>
+<p>这一层 k8s 完全不管，但它决定了"配置全对，性能不对"。</p>
+<p>| 项 | 现象 | |---|---| | IRQ 全打到 CPU0 | 一个核 100%，其余闲 | | RPS/RFS 没开 | 单队列网卡软中断瓶颈 | | C-state 太深 | 延迟毛刺，p99 突然跳 | | 频率调节器 powersave | 吞吐上不去，频率上不来 |</p>
+<p><strong>锚点</strong>：当我看到"CPU 总利用率不高但 p99 很差"，先看 <code>/proc/interrupts</code> 的分布，因为队列和中断不均衡时，平均值会骗人。</p>
+<p>---</p>
+<h2>八、五个真问题（比背流程有用）</h2>
+<p>1. <strong>Allocatable 比物理少</strong> —— 用户以为节点空，调度器以为满。 2. <strong>NUMA 跨节点</strong> —— 内存分配在另一个 socket，延迟翻倍，指标上看不出来。 3. <strong>中断不均衡</strong> —— 平均值正常，p99 崩。 4. <strong>MTU 与封装</strong> —— 小包通、大包死，最像"网络不稳"。 5. <strong>device plugin 不代表拓扑</strong> —— 上报"有 8 张卡"，不代表这 8 张卡在同一个 NUMA 上。</p>
+<p>---</p>
+<h2>九、和前面那份 OSI 拓扑的关系</h2>
+<p><code>链路_OSI拓扑_v1.md</code> 走的是<strong>一台机器出网</strong>的链（七层、五个交接点）。 这份走的是<strong>一个 Pod 落地</strong>的链（硬件、记账、调度、创建、网络、存储、性能；七个交接点）。</p>
+<p>两份的判据是同一条：<strong>拿掉它，系统是散了还是只是变慢了</strong>——网络断了是散，NUMA 错了是慢。散的优先修，慢的排后面。</p>
+<p>---</p>
+<h2>十、补：GPU 这一段为什么最密</h2>
+<p>前面说"要往下钻先钻 GPU"，理由是它把三件事挤在了一起：<strong>资源名、拓扑、驱动版本</strong>。三样里任何一样错，现象都是"跑不起来"，但修法完全不同。</p>
+<h3>10.1 资源名有四种，别混</h3>
+<p>| 资源名 | 含义 | 坑 | |---|---|---| | <code>nvidia.com/gpu: 1</code> | 整卡 | 默认是时间片共享，两个 Pod 同卡会互踩显存 | | <code>nvidia.com/mig-3g.20gb</code> | MIG 切片 | 切了 MIG 就不能整卡用，重配要重启节点上的 GPU | | <code>nvidia.com/gpumem</code> | 显存（部分发行版） | 不是 k8s 原生，靠 device plugin 自己实现 | | <code>rdma/rdma_shared_device_a</code> | IB 设备 | 要给 <code>IPC_LOCK</code> + <code>hostNetwork</code>，不然 RDMA 起不来 |</p>
+<p><strong>锚点</strong>：当我看到两个 Pod 都在跑却互相 OOM，先看它们是不是共享同一张卡的时间片，因为 <code>nvidia.com/gpu</code> 默认不做显存隔离。</p>
+<h3>10.2 device plugin 报的是数量，不是拓扑</h3>
+<p>kubelet 从 device plugin 拿到的只有"有几个、健康不健康"；NUMA 亲和要靠 device plugin API 的 <code>TopologyInfo</code> 字段 + kubelet 的 Topology Manager 策略（<code>single-numa-node</code> / <code>restricted</code> / <code>best-effort</code>）。</p>
+<p>不上报 NUMA，调度器就以为 8 张卡是均质的。实际可能是 4+4 分在两个 socket 上，跨 socket 访问显存延迟翻倍。</p>
+<p><strong>锚点</strong>：当我看到"卡够、跑得慢、<code>nvidia-smi</code> 正常"，先看进程的 NUMA 亲和与 <code>nvidia-smi topo -m</code>，因为跨 NUMA 的显存访问在指标上只表现为"慢"。</p>
+<h3>10.3 驱动有三层，版本必须一层层对</h3>
+<pre><code>
+内核模块 nvidia.ko / nvidia-uvm / nvidia-peermem
+   ↓ 用户态 libcuda.so（驱动版本，如 550.54）
+   ↓ 容器里的 CUDA runtime（如 12.4）
+   ↓ 框架（torch 编译时对着某个 CUDA 版本）
+</code></pre>
+<p>nvidia-container-toolkit 在容器启动时把宿主机的驱动库挂进去。所以<strong>容器里不该装驱动</strong>，只装 CUDA runtime。</p>
+<p>版本错配的三种现象，长得完全不一样：</p>
+<ul>
+<li>容器里 <code>nvidia-smi</code> 有输出、torch 说 <code>no CUDA device</code> → 挂载了驱动但没挂 device 节点，或 <code>NVIDIA_VISIBLE_DEVICES</code> 没设</li>
+<li><code>CUDA error: unknown error</code> → 用户态驱动与内核模块版本不符（升级内核后没重启）</li>
+<li>一跑就 <code>out of memory</code> 但显存空着 → 碎片或 MIG 切片的显存上限</li>
+</ul>
+<p><strong>锚点</strong>：当我看到"nvidia-smi 正常但框架说没卡"，先看容器里的 <code>/dev/nvidia*</code> 与 <code>NVIDIA_VISIBLE_DEVICES</code>，因为 toolkit 挂的是库，设备节点是另一件事。</p>
+<h3>10.4 GPUDirect 与 IB：这一段几乎全是硬件</h3>
+<p>要让 GPU 直接读网卡（RDMA），需要：<code>ib_core</code> + <code>nvidia-peermem</code> 加载、容器 <code>privileged</code> 或至少 <code>IPC_LOCK</code> + <code>NET_ADMIN</code>、<code>hostNetwork</code>、MTU 对齐（IB 常见 4092）、PFC 无损队列配好。</p>
+<p>少一样，现象是"能跑但带宽只有十分之一"，或者干脆 hang 在 <code>ibv_reg_mr</code>。</p>
+<p><strong>锚点</strong>：当我看到 RDMA 带宽只有零头，先看 <code>ibv_devinfo</code> 的 MTU 与 <code>nvidia-smi topo -m</code> 里 GPU 到网卡的路径（走 PCIe switch 还是跨 socket），因为这两样决定了上限，代码决定不了。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>范畴、动力学与局部收敛</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>范畴、动力学与局部收敛</h1>
+<p class="meta">范畴_局部动力学_v1.md　3,740 汉字</p>
+<h1>范畴、动力学与局部收敛</h1>
+<p>*范围：只做局部的。全局那一层写成"存在条件 + 障碍"，不假装能证明。*</p>
+<p>---</p>
+<h2>0 记号</h2>
+<p>固定一个任务族 $T$，上面有覆盖 $\{U_i\}$（"卡"）。每张卡上给三样东西：</p>
+<ul>
+<li>状态空间 $X_i$，一个自映射 $F_i: X_i \to X_i$（"改进一步"）；</li>
+<li>一个偏序集 $(P_i, \le_i)$，或者一个度量 $d_i$；</li>
+<li>一个读数 $V_i: X_i \to P_i$（李雅普诺夫候选），或者一个距离 $V_i(x) = d_i(x, x_i^*)$（巴纳赫候选）。</li>
+</ul>
+<p>卡与卡之间只在重叠 $U_{ij} = U_i \cap U_j \ne \varnothing$ 上有关系，关系是一个单调映射</p>
+<p>$$\mu_{ij}: P_i \to P_j,$$</p>
+<p>它把"在 $i$ 的尺子上是多少"翻译成"在 $j$ 的尺子上是多少"。要求</p>
+<p>$$V_j = \mu_{ij} \circ V_i \quad \text{在 } X_{ij} \text{ 上}. \tag{C}$$</p>
+<p>$\mu$ 是这套东西里唯一"跨卡"的信息。整篇的结论都压在它身上。</p>
+<p>---</p>
+<h2>1 三个层次的关系</h2>
+<p><strong>巴纳赫是李雅普诺夫的特例。</strong> 设 $(X, d)$ 完备，$F$ 是 $L$-压缩（$L&lt;1$），$x^*$ 是不动点。取</p>
+<p>$$V(x) = d(x, x^*).$$</p>
+<p>则 $V(Fx) = d(Fx, Fx^*) \le L\, d(x, x^*) = L\, V(x) &lt; V(x)$（$x \ne x^*$）。所以压缩自动给出一个李雅普诺夫函数，而且是最强的那种：它还给速率</p>
+<p>$$d(F^n x, x^*) \le L^n d(x, x^*).$$</p>
+<p>反过来不成立。李雅普诺夫只要求"有一个量在降"，可以没有唯一性、没有度量、没有速率。中间缺的那一样就是<strong>速率</strong>：要速率，得再加一个下降模量</p>
+<p>$$V(Fx) \le V(x) - \kappa(V(x)), \quad \kappa &gt; 0 \text{ 在非不动点处}.$$</p>
+<p>巴纳赫就是 $\kappa(v) = (1-L)v$ 这个特例。</p>
+<p><strong>范畴论是容器，不是第四个定理。</strong> 一九七三年 Lawvere 把度量空间翻成范畴：距离是 hom-object，三角不等式是复合律，取值在 $([0,\infty], \ge)$ 这个富化基上。在这个翻译下：</p>
+<ul>
+<li>压缩映射 = 一个对 hom-object 一致缩小的函子；</li>
+<li>李雅普诺夫 = 一个到偏序薄范畴的 lax 函子，条件写成 $V \circ F \le V$。</li>
+</ul>
+<p>两句话的形式一样：<strong>存在一个函子到有序量，沿演化严格不增。</strong> 差别只在目标范畴的结构——度量给速率，偏序给终止。所以三个东西不是并列的三套工具，是"一个定理的两种目标 + 一门说清它们怎么拼的语言"。</p>
+<p>重写系统的终止证明用的就是后一句：找一个到良基序的单调映射，每步严格下降，于是没有无限下降链。那是李雅普诺夫的离散版。</p>
+<p>---</p>
+<h2>2 局部：两个定理</h2>
+<p><strong>定理 1（局部终止）。</strong> 设 $(P_i, \le_i)$ 良基（没有无限下降链），且对一切 $x$ 有</p>
+<p>$$F_i x \ne x \;\Longrightarrow\; V_i(F_i x) &lt;_i V_i(x).$$</p>
+<p>则从任意 $x_0$ 出发的轨道有限，必停在不动点上；步数不超过 $V_i(x_0)$ 的秩（一个序数）。</p>
+<p>*证明.* 若轨道无穷，则 $V_i(x_0) &gt; V_i(x_1) &gt; \cdots$ 是 $P_i$ 里的无限下降链，与良基矛盾。$\square$</p>
+<p><strong>定理 2（压缩给出李雅普诺夫）。</strong> 完备度量、$L$-压缩，则 $V(x)=d(x,x^*)$ 满足定理 1 的条件（取 $P_i = [0,\infty)$，通常序良基在有限步意义上不成立，但每条轨道有限且给几何速率）。</p>
+<p>这两条是局部的全部。它们只需要一张卡上的数据，不需要任何跨卡假设。<strong>所以"每张卡上能不能收敛"是一个纯局部问题，永远可答。</strong></p>
+<p>---</p>
+<h2>3 粘贴：全局什么时候存在</h2>
+<p><strong>定理 3（截面存在）。</strong> 设</p>
+<p>1. （C）在每个重叠上成立； 2. 余圈条件：在三重叠加 $U_{ijk} \ne \varnothing$ 上 $$\mu_{ik} = \mu_{jk} \circ \mu_{ij}; \tag{K}$$</p>
+<p>3. 图 $\{\mu_{ij}\}$ 的投影极限 $P_\infty = \varprojlim P_i$ 存在（有限卡时总存在）。</p>
+<p>则存在唯一的 $\bar V: X \to P_\infty$，使每张卡上的分量就是 $V_i$，且</p>
+<p>$$\bar V(Fx) \le \bar V(x),$$</p>
+<p>在 $F$ 真的移动了状态的点上严格。</p>
+<p>*证明.* 对 $x \in X$ 取族 $(V_i(x))_{i \ni x}$。（C）保证它在重叠上一致，（K）保证三卡绕圈回到原值，于是这是 $P_\infty$ 里的一个点，$\bar V$ 良定义。唯一性来自极限的泛性质。不等式逐分量成立。$\square$</p>
+<p><strong>读法：全局部收敛 + 余圈条件 = 全局收敛。</strong> 余圈条件不是技术性的，它就是"三张卡的尺子绕一圈能不能对上"。</p>
+<p>---</p>
+<h2>4 障碍：绕一圈对不上，差多少</h2>
+<p>取实数情形，$\mu_{ij}(x) = a_{ij} x + b_{ij}$，$a_{ij} &gt; 0$（保序）。对每个三重叠加，定义</p>
+<p>$$\delta_{ijk}(x) = \mu_{ki}\bigl(\mu_{jk}(\mu_{ij}(x))\bigr) - x.$$</p>
+<p>展开：</p>
+<p>$$\delta_{ijk}(x) = \underbrace{(a_{ki} a_{jk} a_{ij} - 1)}_{A_{ijk}-1}\, x \;+\; \underbrace{a_{ki} a_{jk} b_{ij} + a_{ki} b_{jk} + b_{ki}}_{B_{ijk}}.$$</p>
+<p>于是障碍被拆成两个<strong>与 $x$ 无关</strong>的数：</p>
+<ul>
+<li><strong>斜率环量</strong> $A_{ijk} = a_{ki} a_{jk} a_{ij}$。理想值是 1。</li>
+<li><strong>常数环量</strong> $B_{ijk}$。理想值是 0。</li>
+</ul>
+<p>定义障碍量</p>
+<p>$$\rho \;=\; \frac{\#\{(i,j,k):\ |\log A_{ijk}| &gt; \varepsilon \ \text{或}\ |B_{ijk}| &gt; \varepsilon\}}{\#\{(i,j,k)\}}.$$</p>
+<p><strong>定理 4.</strong> $\rho = 0$（对某个 $\varepsilon$，且误差可忽略）$\iff$ 存在全局仿射类李雅普诺夫函数；$\rho &gt; 0$ $\iff$ 不存在，且 $\rho$ 是"有多少张卡互相不认"的比例。</p>
+<p><strong>一个反直觉的推论。</strong> 若所有 $\mu$ 都是真收缩（$a&lt;1$），则三重叠加上 $A_{ijk} &lt; 1$ 必然成立，于是<strong>永远拼不出全局函数</strong>（仿射类里）。收缩性和可拼性是矛盾的：因为收缩不是同构，绕一圈回不到原处。</p>
+<p>这条正好解释了"统一评分"为什么难：<strong>单位不同就是 $a \ne 1$</strong>。一张卡的分数对另一张卡敏感两倍，绕三张卡就是八倍，环量 8——不是你算错了，是这个环本身不闭合。</p>
+<p>---</p>
+<h2>5 速率：第二重障碍</h2>
+<p>每张卡上有压缩率 $L_i$（或下降模量 $\kappa_i$）。沿一条跨卡路径 $\gamma = i_0 \to i_1 \to \cdots \to i_m$，总压缩不超过</p>
+<p>$$L(\gamma) = \prod_{t=1}^{m} L_{i_t}.$$</p>
+<p><strong>定理 5.</strong> 速率与路径无关 $\iff$ $\log L$ 在重叠上可写成势差：</p>
+<p>$$\log L_{j} - \log L_{i} = \varphi_j - \varphi_i \quad \text{在 } U_{ij} \text{ 上},$$</p>
+<p>即 $\log L$ 的余圈也消失（它是一个恰当的 1-上链）。</p>
+<p>否则"收敛多快"取决于你走哪条路——这在实验上就是"换个顺序跑，结论不一样"。</p>
+<p>所以有两重障碍：序的环量（决定收不收敛）、速率的环量（决定收敛多快）。前者为零才有全局李雅普诺夫，后者为零才有统一次率。</p>
+<p>---</p>
+<h2>6 应用到自改进系统</h2>
+<p>把上面套到"改进循环"上：状态 = 当前的脚手架（提示词、工具、经验库）；$F$ = 改一步；卡 = 评分域（不同基准、不同判官、不同任务族）。</p>
+<p>三步测法，都能当天做完：</p>
+<p><strong>第一步，拟合 $\mu$。</strong> 每两张卡取 20 个以上共同案例（同一份产物被两套尺子评过），做单调回归，得 $a_{ij}, b_{ij}$，报 $R^2$ 或 Kendall $\tau$。$\tau$ 低说明这一对根本不可比，先别谈拼。</p>
+<p><strong>第二步，算环量。</strong> 对每个三重叠加算 $A_{ijk} = a_{ki}a_{jk}a_{ij}$ 与 $B_{ijk}$。$\rho$ 就是"绕圈对不上的比例"。同时画出"哪几张卡在互相打架"的图（红边标 $|\log A|$）。</p>
+<p><strong>第三步，下结论。</strong></p>
+<ul>
+<li>$\rho = 0$：可以拼全局函数，给出全局终止结论，速率用定理 5 检查。</li>
+<li>$\rho &gt; 0$：只报卡内终止，并报"循环发生在 $C_1$–$C_2$–$C_3$ 这个环上"。不许说"总体在变好"。</li>
+</ul>
+<p><strong>预期的结果。</strong> 我押 $\rho &gt; 0$，而且不小。原因是各卡的判据本来就是私有化的（LLM 判官、不同基准、不同任务），单位几乎不可能一致。若实测 $\rho$ 接近 0，那是意外之喜，说明这几套尺子其实同源。</p>
+<p><strong>两张卡互相不认的最小反例。</strong> $X = \{0, 1\}$。卡 A 认为 $0$ 好，$F_A$ 把 $1$ 推到 $0$；卡 B 认为 $1$ 好，$F_B$ 把 $0$ 推到 $1$。交替执行就成了 2-循环，各自都"在改进"，全局永不终止，且不存在全局 $\bar V$（因为 $\bar V(0) \le \bar V(1) \le \bar V(0)$ 会逼出相等，与严格性矛盾）。这就是自改进系统长程漂移的最简模型。</p>
+<p>---</p>
+<h2>7 边界与反例</h2>
+<ul>
+<li><strong>良基性在实数上不成立。</strong> 定理 1 要求良基序；$([0,\infty), \le)$ 不良基（$1 &gt; 1/2 &gt; 1/4 &gt; \cdots$）。所以连续情形要给下降模量 $\kappa$，或者把序换成"$\mathbb{N}$ 上的步数"。这是技术细节，但写论文时会被抓。</li>
+<li><strong>投影极限要求 $\mu$ 是满射到像上。</strong> 若某些 $\mu$ 只是嵌入（信息丢失），极限可能为空。处理办法：先取像，再取极限。</li>
+<li><strong>障碍不是上同调类，是它的一个代表。</strong> 严格说，$\delta$ 是 Čech 1-上链的边界；$\rho$ 是它的范数的一个代理。要在论文里说"非零障碍"，得先固定一个层（$\mu$ 所在的函数层），否则换一层障碍就变了。</li>
+<li><strong>定理 3 的"全局"是相对于这组卡而言的。</strong> 加一张新卡可能让 $\rho$ 从 0 变正。所以"全局收敛"这句话永远要带"在这组卡上"。</li>
+</ul>
+<p>---</p>
+<h2>8 参考论文</h2>
+<p>按"先读哪篇"排序。带★的是必读。</p>
+<p><strong>范畴论与度量（核心）</strong></p>
+<ul>
+<li>★ Lawvere, *Metric spaces, generalized logic, and closed categories*, Rend. Sem. Mat. Fis. Milano 43 (1973), 135–166；重印于 *Reprints in Theory and Applications of Categories* 1 (2002), 1–37。度量空间 = 富化范畴的原始文献，全篇只有十几页，读得动。</li>
+<li>★ Kelly, *Basic Concepts of Enriched Category Theory*, LMS Lecture Notes 64, 1982。富化范畴的标准参考，看前三章够用。</li>
+<li>Mac Lane, *Categories for the Working Mathematician*, 2nd ed., Springer 1998。2-范畴、极限、泛性质，查用。</li>
+</ul>
+<p><strong>动力学与层（拼接那一步）</strong></p>
+<ul>
+<li>★ Schultz, Spivak, Vasilakopoulou, *Dynamical Systems and Sheaves*, Applied Categorical Structures 28 (2020), 57–94；<a href="https://arxiv.org/abs/1609.08086">arXiv:1609.08086</a>。把动力系统写成时间轴上的一族集合（层），状态随时间的演化变成限制映射。这是"局部数据 + 粘贴"的正统做法。</li>
+<li>Spivak, *Polynomial functors: a mathematical theory of interaction*（与 Niu 等的书稿）。动力系统 = 多项式函子的余代数，接口与复合写得很清楚。</li>
+<li>Myers, *Categorical Systems Theory*, 书稿（davidjazmyers.github.io/book）。系统、机器、镜头（lens）、开系统，最适合"把系统当对象、把连线当态射"的直觉。</li>
+</ul>
+<p><strong>终止与序（李雅普诺夫那一半）</strong></p>
+<ul>
+<li>Baader, Nipkow, *Term Rewriting and All That*, CUP 1998，第 6 章（终止）。良基序上的下降度量，就是离散李雅普诺夫。</li>
+<li>Zantema, *Termination of Term Rewriting*, 收于 *Handbook of Automated Reasoning*。极值函数（polynomial interpretation）那一节可直接照搬到"评分函数"上。</li>
+</ul>
+<p><strong>障碍与上同调</strong></p>
+<ul>
+<li>★ Ghrist, *Elementary Applied Topology*, 2014，第 5–6 章（层与上同调）。不要求代数拓扑背景，讲清了"局部一致、全局不一致"这件事。</li>
+<li>Curry, *Sheaves, Cosheaves and Applications*, <a href="https://arxiv.org/abs/1303.3255">arXiv:1303.3255</a>。Čech 上同调与障碍的工程视角。</li>
+</ul>
+<p><strong>邻近的应用（不是必须，但能借语言）</strong></p>
+<ul>
+<li>de Felice, Toumi, Coecke, *DisCoPy: Monoidal Categories in Python*, <a href="https://arxiv.org/abs/2005.02975">arXiv:2005.02975</a>。当类型检查用。</li>
+<li>Coecke 一系的组合性研究（ZX-calculus、DisCoCirc）。看"组合性障碍"那几篇即可，不必全读。</li>
+</ul>
+<p>---</p>
+<h2>9 一句话</h2>
+<p>局部能证：每张卡上有李雅普诺夫（或巴纳赫），于是卡内终止、卡内有速率。</p>
+<p>全局只能判：余圈对上才存在全局函数，对不上就给障碍量 $\rho$，并指出循环在哪几张卡之间。</p>
+<p>这个结论不完美，但它是可算的：$\rho$ 是一串回归斜率乘起来减一。</p>
+<p>---</p>
+<h2>10 第一次实测（2026-11-09，样本＝调研目录 22 份报告）</h2>
+<p>脚本 <code>tools/repro/rho_probe.mjs</code>，抽 11 个宏观量，看同一量在不同报告里是否给同一个值。</p>
+<p><strong>事实层。</strong></p>
+<p>| 量 | 提到它的报告数 | 值簇 | 最大比 | |---|---|---|---| | 社零总额 | 2 | 2 | 4245.8 | | 出游花费 | 2 | 2 | 966.3 | | 电影票房 | 2 | 2 | 1.54 | | 出游人次 | 6 | 1 | 1.000 | | 恩格尔系数 | 6 | 1 | 1.000 | | 城镇化率 | 6 | 1 | 1.000 |</p>
+<p>$\rho_{\text{fact}} = 0.5$。但看那三个"不一致"：社零 118 亿 vs 501,000 亿，出游花费 65.2 亿 vs 63,000 亿——不是抄错，是<strong>分母不同</strong>（县域口径 vs 全国口径）。这和对撞文档里那条"指标同名，分母不同"是同一个机制。</p>
+<p>所以 $\rho_{\text{fact}}$ 不是错误率，是<strong>口径混杂率</strong>。</p>
+<p><strong>空间层，这条更要紧。</strong></p>
+<p>231 对报告里，有共同量的只有 40 对（17.3%）；共享量 ≥3 的只有 <strong>1 对</strong>。分布：0 个共同量 191 对，1 个 33 对，2 个 6 对，3 个 1 对。</p>
+<p>也就是说：<strong>这个图册近乎不连通。</strong> $\mu_{ij}$ 根本拟合不出来——不是拟合得差，是样本量不够。于是 $A_{ijk}$ 不可算，$\rho$ 不是 0、不是大，是<strong>未定义</strong>。</p>
+<p><strong>判断层。</strong> 需要"同一份产物被两套尺子评过"的记录。这批报告里一条也没有。</p>
+<p><strong>三条结论。</strong></p>
+<p>1. $\rho$ 未定义比 $\rho$ 大更糟：大至少说明"在打架"，未定义说明"根本没碰过面"。一个没碰过面的世界，谈全局收敛是空话。 2. 要让它有定义，得先造重叠：同一个案例，两套判据各评一次，记在同一张卡上。这是<strong>仪器问题</strong>，不是数学问题。 3. 时间维必须显式。这批文件是同一周写的，我测的是一个时刻；文件天天在变，所以同一张卡的 $V$ 也是 $t$ 的函数。严格说图册是"时间上的层"（Schultz–Spivak 那篇的框架），跨时刻还要一个 $\mu_t$，否则明天再测一次，$\rho$ 的变化分不清是世界变了还是尺子变了。</p>
+<p><strong>实测把这套东西的位置说清楚了：</strong> 定理没问题，样本没有。数学不空，但<strong>这个工作区现在喂不饱它</strong>。</p>
+<p>---</p>
+<h2>11 环境侧的约束：重叠是识别的必要条件</h2>
+<p>上面所有定理都默认一件事：$U_{ij} \ne \varnothing$。这一条不是技术假设，是<strong>评价能不能成立的前提</strong>。</p>
+<p><strong>命题（无重叠则不可识别）。</strong> 若 $U_{ij} = \varnothing$，则 $\mu_{ij}$ 不受任何约束：任给两个单调映射都和局部数据相容。于是没有唯一解，$A_{ijk}$ 无定义，$\rho$ 无定义。</p>
+<p>这就是因果推断里的 positivity 假设（$0 &lt; P(T\mid X) &lt; 1$）：没有共同支撑，因果效应不可识别。换成大白话——<strong>两个世界没碰过面，你没法说它们之间的翻译对不对</strong>。</p>
+<p>层论的说法更干脆：site 不连通时，层就是各卡上独立截面的元组，粘贴条件空转，全局约束等于零。</p>
+<p>所以"零碎信息输进去不公平"这句话，在数学上是对的：<strong>公平 = 评价所用的信息足以识别被评价的量。</strong> 信息不足时，评价不是严格，是无效。</p>
+<p>但"世界应该给约束"这半句要打折。世界没有义务给你重叠，零碎是常态。能力的那一半，是<strong>自己制造重叠</strong>：做实验、做对照、把同一个案例拿两套尺子各评一次——这在因果语言里就是干预，在层论语言里就是造非空重叠。</p>
+<p>判据也因此不必苛刻：不需要整，只需要<strong>有一处碰到过</strong>。一处重叠就能定一个局部 $\mu$；全无才不可识别。</p>
+<p>放到这个工作区：231 对报告里 191 对零重叠，所以现在不是"判得不准"，是"没有可判的结构"。先造重叠，再谈对错。</p>
+<p>---</p>
+<h2>12 造一个能算的空间数据集</h2>
+<p>问题：真实语言在流形上，但数据太少时连图册都拼不起来。所以先造一个知道标准答案的。</p>
+<p><code>tools/repro/manifold_lang.mjs</code>：</p>
+<ul>
+<li>潜空间是圆柱 $S^1 \times [-1,1]$ 嵌进 $\mathbb{R}^3$（角度 + 高度），400 个指称点；</li>
+<li>五个"来源"，每个有自己的参照系：$x_i = R_i z + b_i + \varepsilon_i$，$R_i$ 随机正交，$b_i$ 随机平移；</li>
+<li>重叠图是环：1–2–3–4–5–1，每对之间共享 $n$ 个指称；</li>
+<li>每对用仿射最小二乘拟合 $\mu_{ij}$，环量 $\rho = \lVert M_{51}M_{45}M_{34}M_{23}M_{12} - I \rVert_F$，60 次重复取中位数。</li>
+</ul>
+<p><strong>结果（$D=3$）。</strong></p>
+<p>| 共同指称数 $n$ | 噪声 0 | 噪声 0.05 | 噪声 0.20 | |---|---|---|---| | 2 | 无解 60/60 | 无解 60/60 | 无解 60/60 | | 3 | 无解 60/60 | 无解 60/60 | 无解 60/60 | | 4 | <strong>0.000</strong> | 0.000 | 0.000 | | 6 | 0.000 | 0.059 | 0.757 | | 20 | 0.000 | 0.051 | 0.610 | | 100 | 0.000 | 0.050 | 0.616 | | 300 | 0.000 | 0.050 | 0.621 |</p>
+<p><strong>三条读出来的东西。</strong></p>
+<p>1. <strong>$n \le D$ 时无解。</strong> 不是估得差，是方程欠定：仿射映射要 $D+1$ 个点才定得住。60 次全失败，没有例外。这条是硬门槛：每对来源至少要有 4 个共同指称，否则谈不上翻译。 2. <strong>无噪声时环精确闭合到机器精度。</strong> 定理 3 的构造是对的，$\rho = 0$ 真的是可达到的状态。 3. <strong>有噪声时环永不闭合，且不随 $n$ 改善。</strong> 0.05 的噪声给出 0.05 的环量，$n$ 从 6 加到 300 一点没降。原因不是方差，是<strong>变量误差衰减</strong>：$X$ 带噪声时最小二乘的斜率会被压成 $\lambda = \mathrm{var}(z)/(\mathrm{var}(z)+\sigma^2)$，于是每个 $\mu$ 都是真映射的一个收缩。</p>
+<p>尺度扫描证实了这一点（噪声固定 0.05，$n=100$）：</p>
+<p>| 尺度 | 1 | 3 | 10 | 30 | |---|---|---|---|---| | $\rho$ | 0.0502 | 0.0056 | 0.0005 | 0.0001 |</p>
+<p>尺度放大 $\Rightarrow$ 信噪比上升 $\Rightarrow$ $\rho$ 按 $1/\text{尺度}^2$ 掉。也就是说 $\rho \propto \sigma^2/\mathrm{var}$，与样本量无关。</p>
+<p>这就把 §4 那条反直觉推论坐实了：<strong>收缩性本身就是障碍。</strong> 测量有噪声 $\Rightarrow$ 每张卡的翻译都是收缩 $\Rightarrow$ 环量必小于 1 $\Rightarrow$ 全局李雅普诺夫在仿射类里不存在。加数据救不回来，只有换估计器（总最小二乘、工具变量）或者提信噪比。</p>
+<p><strong>掐断闭环</strong>（5 号与 1 号零重叠，其余照旧）：$\rho$ 无定义 60/60；顺链复合的偏差在 2.1–2.8 之间，加数据也不降。没有闭环时误差只沿路径累积，不收敛。这就是 §11 那个"评价无效"的数值版。</p>
+<p><strong>对真实数据的映射。</strong> 真实图册的重叠率 17.3%，每对共享量 0–3 个，远低于 $D+1$。所以真实情形不是"$\rho$ 大"，是"$\rho$ 根本没定义"。先要把 $n$ 做上去（同一案例两套尺子），再谈环量——这两步的顺序不能反。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

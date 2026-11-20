@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>标准技术清单 · v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>标准技术清单 · v1</h1>
+<p class="meta">交易_标准技术清单_v1.md　1,969 汉字</p>
+<h1>标准技术清单 · v1</h1>
+<p>只收"有明确判据、能回测、能证伪"的技术。每条写四样：定义、参数、怎么用、什么时候不管用。</p>
+<p>江恩、艾略特、缠论放在最后一节，单独说明为什么不进主判据。</p>
+<p>---</p>
+<h2>一、道氏理论</h2>
+<p><strong>定义</strong>：价格有三种趋势——主要趋势（一年以上）、次级折返（三周到三个月）、日间波动（噪音）。趋势在被明确反转之前一直有效。</p>
+<p><strong>判据三条</strong>： 1. 高点与低点同时上移＝上升，同时下移＝下降。只破一条不算反转。 2. 成交量要确认：上升趋势里涨日量大、跌日量小。 3. 指数之间要互相验证。A 股对应的是上证与深成指（或沪深300与创业板），不是工业与运输。</p>
+<p><strong>细节</strong>：反转的确认永远滞后，通常回吐主要趋势的 20%–30% 才确认。这是代价，不是缺陷。</p>
+<p><strong>失效</strong>：A 股四个指数相关性极高，"互相验证"退化成同一件事，第三条基本没信息量。震荡市里第 1 条会连续给出错误信号。</p>
+<p>---</p>
+<h2>二、均线系统与葛兰碧八法</h2>
+<p><strong>参数</strong>：5 / 10 / 20 / 60 / 120 / 250 日。短线用 EMA，长线用 SMA。</p>
+<p><strong>葛兰碧八法（四个买点、四个卖点）</strong>：</p>
+<ul>
+<li>买 1：均线由下行转平或上行，价格从下向上穿越。</li>
+<li>买 2：价格在均线上方回踩，不破，再转强。</li>
+<li>买 3：价格跌破均线后立刻收回，均线仍在上行。</li>
+<li>买 4：价格暴跌远离均线，均线仍上行（超跌反弹，风险最高）。</li>
+<li>卖 1–4 是镜像。</li>
+</ul>
+<p><strong>细节</strong>：买 2 的关键是"回踩时量缩"，量不缩的回踩多半是趋势转弱。买 4 只能小仓位，因为它是在赌均值回归，不是在跟趋势。</p>
+<p><strong>失效</strong>：横盘期金叉死叉连续亏损（whipsaw）。过滤办法两个：加 ADX（低于 20 不做均线信号），或加波动率过滤（ATR 处于历史低位时不做）。</p>
+<p>---</p>
+<h2>三、蜡烛图（酒田战法 / Nison）</h2>
+<p><strong>常用形态</strong>：锤子、上吊、吞没、启明星/黄昏星、十字星、孕线。</p>
+<p><strong>细节</strong>：形态本身胜率接近 50%，只有加两个条件才有边际： 1. 位置——必须出现在支撑/压力/前高前低附近。 2. 量——形态当天的量要显著大于前五日均量（吞没尤其）。</p>
+<p><strong>失效</strong>：A 股的涨跌停会把形态打断：一字板没有实体，长下影可能是"跌停打开"而不是"承接"。停牌复牌后的第一根 K 线基本没有形态意义。</p>
+<p>---</p>
+<h2>四、量价关系</h2>
+<p><strong>四象限（斯波朗迪）</strong>：量增价涨（健康）、量增价跌（出货）、量缩价涨（背离）、量缩价跌（无量阴跌）。</p>
+<p><strong>A 股要用换手率，不要用绝对成交量</strong>。原因：流通盘会变（解禁、增发、次新股），绝对量的历史不可比。换手率＝成交量/流通股本。</p>
+<p><strong>细节</strong>：看"量比"（当日每分钟均量 / 过去五日每分钟均量）比看总量及时。突破日量比低于 1.5，突破可信度大幅下降。</p>
+<p><strong>失效</strong>：注册制下次新股换手率长期 20% 以上，量价关系完全失真；指数 ETF 的成交量受套利资金影响，不代表情绪。</p>
+<p>---</p>
+<h2>五、支撑阻力与趋势线</h2>
+<p><strong>定义</strong>：支撑是买方反复接住的价格区，阻力是卖方反复压住的价格区。</p>
+<p><strong>细节三条</strong>： 1. 触点越多越有效，三个以上才算一条线。 2. 破位要"收盘价 + 幅度 + 时间"三个条件：收盘破、超出 3%、连续两天。 3. 支撑被破之后会变成阻力，反之亦然。角色的转换往往比原来的位置更可靠。</p>
+<p><strong>失效</strong>：涨跌停造成的一次性跳空会直接跨过整条支撑带，此时"破位"没有交易含义，只是流动性缺失。</p>
+<p>---</p>
+<h2>六、形态学</h2>
+<p><strong>常用</strong>：头肩顶/底、双顶/双底、三角形（对称/上升/下降）、旗形、矩形、缺口。</p>
+<p><strong>细节</strong>：</p>
+<ul>
+<li>颈线是判据，不是画出来的好看线。</li>
+<li>量度目标＝形态高度，从头（或底）量起，只是参考，不是承诺。</li>
+<li>突破后常有回抽，回抽不破颈线才算确认。</li>
+</ul>
+<p><strong>失效</strong>：形态需要连续的成交序列，A 股停牌、涨跌停、长假会把它切碎。形态识别的主观性极高，两个人画同一条颈线会差 3%。</p>
+<p>---</p>
+<h2>七、指标</h2>
+<p>| 指标 | 标准参数 | 真正有用的部分 | 常见误用 | |---|---|---|---| | MACD | 12/26/9 | 零轴上下（多空分界）、柱状线背离 | 把金叉死叉当信号，滞后 3–5 天 | | KDJ | 9/3/3 | 极值区（&lt;10 或 &gt;90）的钝化提示 | 趋势市里超买可以超买一个月 | | RSI | 14 | 50 中轴的多空切换、背离 | 用 30/70 当买卖点 | | BOLL | 20, 2σ | 带宽收缩（变盘前兆） | 把触上轨当卖出 | | ATR | 14 | 归一化波动，用于止损与头寸 | 用它预测方向 |</p>
+<p><strong>共同点</strong>：所有指标都是价格的函数，不提供价格里没有的信息。它们唯一的增量是"归一化"——让不同波动率的标的可以比较，让止损可以按波动而不是按感觉设。</p>
+<p>---</p>
+<h2>八、头寸与风险</h2>
+<p><strong>海龟法则</strong>：唐奇安通道 20 日突破进场、10 日反向出场；止损 2N（N＝ATR20）；单笔风险 1% 净值；按 0.5N 加仓，最多四层。</p>
+<p><strong>细节</strong>：海龟的核心不是通道，是"单笔风险固定"。通道可以换，风险规则不能换。</p>
+<p><strong>分数凯利</strong>：全凯利在参数估计有误差时会过度下注，实务用 1/4 到 1/2 凯利，或者直接用固定比例风险（0.5%–1%）。</p>
+<p><strong>失效</strong>：A 股 T+1 让"当天止损"做不到，只能次日开盘走，隔夜跳空风险要算进单笔风险里——这也是 A 股单笔风险该比海龟更保守（0.5%）的原因。</p>
+<p>---</p>
+<h2>九、缺口</h2>
+<p>四种：普通缺口（会补）、突破缺口（不回补）、持续缺口（中途）、衰竭缺口（末端）。</p>
+<p><strong>A 股特有的问题</strong>：一字板造成的缺口不是"缺口"，是流动性缺失，不能用缺口理论解释，也不能用"缺口必补"来赌。</p>
+<p>---</p>
+<h2>十、不进主判据的三样</h2>
+<p><strong>江恩</strong>：时间周期与角度线，参数自由度太高，几乎可以拟合任何走势。可证伪性接近零。</p>
+<p><strong>艾略特波浪</strong>：同一段走势可以数出三种以上的浪形，事后总能自圆其说。作为"叙述工具"可以，作为"决策判据"不行。</p>
+<p><strong>缠论</strong>：定义严格（笔、线段、中枢），但"级别"的选择带主观性，且没有公开的大样本检验。它的价值在把走势结构化，不在预测。</p>
+<p>判断标准很简单：<strong>同一段行情，两个人用它得出相反结论，且都无法被判错——那就不是技术，是修辞。</strong></p>
+<p>---</p>
+<h2>十一、A 股变形（技术原样照搬会错的地方）</h2>
+<p>1. 均线信号要加波动率过滤，因为横盘占比高。 2. 止损不能用"当天跌破就走"，T+1 决定了最早次日。 3. 突破要加"量比 + 换手率"双条件，因为缩量假突破多。 4. 形态识别在这个市场里可靠性更低，停牌与涨跌停会切断序列。 5. 单笔风险从 1% 降到 0.5%，因为隔夜跳空不可控。 6. 指数间"互相验证"无效，四个指数是同一条腿。</p>
+<p>---</p>
+<h2>十二、接下来要读的（按 TDD 需要排序）</h2>
+<p>1. 《股市趋势技术分析》爱德华兹 &amp; 迈吉 —— 形态与趋势线的原始定义。 2. 《期货市场技术分析》约翰·墨菲 —— 指标的标准化参数来源。 3. 《日本蜡烛图技术》史蒂夫·尼森 —— 形态与位置的配合。 4. 《专业投机原理》维克多·斯波朗迪 —— 量价四象限与风险优先。 5. 《海龟交易法则》柯蒂斯·费思 —— 头寸与规则的机械化。 6. 《交易与交易所》拉里·哈里斯 —— 微观结构，解释为什么 A 股的滑点与冲击成本长得不一样。</p>
+<p>前五本给判据，第六本给"为什么这些判据在这个市场要打折"。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

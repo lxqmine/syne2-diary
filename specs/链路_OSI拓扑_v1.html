@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>一条链的拓扑：从 WiFi 的电磁波到那个网页</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>一条链的拓扑：从 WiFi 的电磁波到那个网页</h1>
+<p class="meta">链路_OSI拓扑_v1.md　1,601 汉字</p>
+<h1>一条链的拓扑：从 WiFi 的电磁波到那个网页</h1>
+<blockquote>目的不是讲 OSI 七层，是把这台机器的每一次出站，按层走一遍，标清楚<strong>每层能看见什么、错了会看见什么、锚点写在哪</strong>。</blockquote>
+<blockquote>数据取自 2026-11-17 本机实测：<code>DESKTOP-TRHR9F8</code>，<code>192.168.10.206/24</code>，网关 <code>192.168.10.1</code>，WLAN 网卡 MediaTek Wi-Fi 6 MT7902LEN，MAC <code>50-2e-91-41-24-08</code>。</blockquote>
+<p>---</p>
+<h2>〇、先给结论：一条路径，五个交接点</h2>
+<pre><code>
+[应用] 浏览器 ──┐
+[表示] TLS      │  ① socket 交给内核
+[会话] TLS 会话 │
+[传输] TCP      │  ② 内核交给网卡驱动
+[网络] IP/NAT   │  ③ 网卡把帧交给 AP（空口）
+[链路] 802.11   │  ④ AP 转成以太网，交给网关
+[物理] 2.4/5GHz ┘  ⑤ 网关 NAT 之后出公网
+</code></pre>
+<p>层是七层，<strong>交接点是五个</strong>。排障时查交接点，不查层——层内部很少坏，坏都坏在"谁把东西交给谁"那一下。</p>
+<p>判据仍然是那句：<strong>拿掉它，系统是散了还是只是变慢了</strong>。链路是"散"的那一类，少一环整条不通。</p>
+<p>---</p>
+<h2>一、L1 物理层：电磁波</h2>
+<p>| 项 | 这台机器上的样子 | |---|---| | 介质 | 5GHz / 2.4GHz 空口，<code>MediaTek Wi-Fi 6 MT7902LEN</code> | | 关联对象 | 由 SSID 决定，实测未取（<code>netsh wlan show interfaces</code> 需要位置权限 + 管理员） | | 可见量 | RSSI（dBm）、协商速率（MCS）、信道、重传 | | 典型故障 | 信号够但速率掉、信道拥塞、2.4G 干扰 |</p>
+<p><strong>这一层能合法看到什么</strong>：自己网卡的 RSSI、速率、信道。看不到别人的内容——空口是加密的（WPA2/WPA3），抓到的只是密文帧。</p>
+<p><strong>断了会看见什么</strong>：<code>Media disconnected</code>、DHCP 拿不到地址、<code>ping</code> 网关不通。</p>
+<p>---</p>
+<h2>二、L2 数据链路层：帧与 MAC</h2>
+<p>| 项 | 实测值 | |---|---| | 本机 MAC | <code>50-2e-91-41-24-08</code> | | 网关 MAC | <code>10-5f-02-31-6b-64</code> | | ARP 表 | 只有网关 + 五个组播地址（<code>224.0.0.2/22/251/252</code>、<code>239.255.255.250</code>） | | 其余邻居 | <strong>一条都没有</strong> |</p>
+<p>ARP 表这么空，说明这台机器几乎不跟局域网内其他设备直接通信，全部经网关。所谓"整网的消息"，在这个网里本来就没多少。</p>
+<p><strong>这一层能合法看到什么</strong>：自己的 ARP 缓存、自己的 MAC、广播/组播（mDNS 5353、SSDP 1900、NBNS 137）——这些本来就是发给所有人的。</p>
+<p><strong>不该做的事</strong>：监听别人的单播帧、伪造 ARP 做中间人。前者是窃听，后者是攻击，都不是"看拓扑"。</p>
+<p><strong>断了会看见什么</strong>：<code>arp -a</code> 里网关那条消失或 MAC 变了（换路由器/被劫持）、大量 ARP 请求无应答（网关不在同一广播域）。</p>
+<p>---</p>
+<h2>三、L3 网络层：IP、路由、NAT</h2>
+<p>实测路由表（节选）：</p>
+<pre><code>
+0.0.0.0/0        → 192.168.10.1    metric 30   ← 默认路由
+192.168.10.0/24  → On-link         metric 286  ← 本地子网
+192.168.10.206/32→ On-link
+224.0.0.0/4      → On-link
+</code></pre>
+<p>| 项 | 值 | |---|---| | 地址 | <code>192.168.10.206/24</code>（DHCP，DNS 后缀 <code>lan</code>） | | 网关 | <code>192.168.10.1</code> | | 路由度量 | 30（WLAN），以太网口 <code>Media disconnected</code> | | NAT | 由网关做，本机看不到映射表 |</p>
+<p><strong>这一层能合法看到什么</strong>：自己的路由表、自己的 TTL、自己的 MTU、<code>tracert</code> 的每一跳（那是发给自己包的回应）。</p>
+<p><strong>断了会看见什么</strong>：</p>
+<ul>
+<li>有地址但 ping 不通网关 → L2 或网关本身</li>
+<li>ping 通网关但出不去 → 网关的 NAT / 上游</li>
+<li>能 ping IP 但解析不了域名 → DNS（那是 L7）</li>
+</ul>
+<p><strong>MTU 是这一层最典型的隐形坑</strong>：1500 是默认，PPPoE 是 1492，隧道会更小。症状是"小请求正常、大请求卡死"，因为分片被中间设备丢了。</p>
+<p>---</p>
+<h2>四、L4 传输层：TCP/UDP 与连接表</h2>
+<p>| 项 | 说明 | |---|---| | 端口 | 本机临时端口 49152–65535 | | 连接表 | <code>netstat -ano</code> 可看，含 PID | | 状态 | <code>SYN_SENT</code> 卡住 = 出去没回；<code>CLOSE_WAIT</code> 堆积 = 应用没关 | | UDP | DNS 53、QUIC 443、mDNS 5353 |</p>
+<p><strong>这一层能合法看到什么</strong>：自己的连接表、自己的重传计数（<code>netstat -s</code>）。</p>
+<p><strong>断了会看见什么</strong>：</p>
+<ul>
+<li><code>SYN_SENT</code> 一直不动 → 包出去了没回来（防火墙、对端不在）</li>
+<li><code>SYN_RECEIVED</code> 堆积 → 有人在扫或半开攻击</li>
+<li>连上但很慢 → 看重传率，别先看应用</li>
+</ul>
+<p>---</p>
+<h2>五、L5/L6 会话与表示：TLS</h2>
+<p>| 项 | 说明 | |---|---| | 握手 | ClientHello → ServerHello → 证书 → Finished | | 明文可见 | SNI（目标域名）、证书链、ALPN（h2/http1.1）、TLS 版本 | | 不可见 | 请求路径、正文、Cookie（全在密文里） |</p>
+<p><strong>这就是"抓包能看到什么"的真实上限</strong>：一个 IP、一个域名、一次握手的元数据。想看内容得解密，而解密别人的流量不是技术问题。</p>
+<p><strong>断了会看见什么</strong>：</p>
+<ul>
+<li>证书报错 → 中间人、过期、域名不匹配</li>
+<li>握手卡在 ClientHello → SNI 被阻断或 MTU 问题</li>
+<li>握手成功但很快断 → 应用层协议不匹配（ALPN 谈崩）</li>
+</ul>
+<p>---</p>
+<h2>六、L7 应用层：DNS、HTTP/2、QUIC</h2>
+<p>| 项 | 说明 | |---|---| | DNS | 先查本机缓存，再问 DHCP 下发的 DNS；UDP 53，大了走 TCP | | HTTP/2 | 多路复用，一条 TCP 上跑多个请求 | | QUIC | 跑在 UDP 443 上，握手和加密揉在一起，抓包更难读 |</p>
+<p><strong>断了会看见什么</strong>：</p>
+<ul>
+<li>域名解析失败但 IP 能通 → DNS</li>
+<li>解析到错地址 → hosts 或 DNS 劫持</li>
+<li>网页半开 → HTTP/2 的流控或服务端推流</li>
+</ul>
+<p>---</p>
+<h2>七、五个交接点（真正该查的地方）</h2>
+<p>| # | 交接点 | 谁先放弃 | 状态记在哪 | 断了会看见什么 | |---|---|---|---|---| | ① | 应用 → 内核 socket | 应用（超时） | 应用日志 | 连接没建立，<code>netstat</code> 里连 SYN 都没有 | | ② | 内核 → 网卡驱动 | 驱动（队列满丢包） | <code>netstat -s</code> 丢弃计数 | 有 SYN 发出、对端没收到 | | ③ | 网卡 → AP（空口） | 网卡（重传上限） | 网卡统计 | 信号好但丢包高、速率掉 | | ④ | AP → 网关（以太网） | AP | 网关日志（看不到） | 时通时不通，其他设备也慢 | | ⑤ | 网关 NAT → 公网 | 网关 | 网关日志（看不到） | 全屋都断，或只有某些端口不通 |</p>
+<p><strong>排障顺序不是 1→5，是按"频率 × 修复成本"</strong>：先 ⑤（一条命令能确认：手机连同一个 WiFi 能不能上网），再 ③（换个位置/信道），再 ①②（本机），最后 ④。</p>
+<p>---</p>
+<h2>八、锚点（触发句，可直接用）</h2>
+<p>1. 当我看到"有 IP、ping 不通网关"，先查 L2 的 ARP 与网关 MAC，因为 IP 通不通在这条链上先由帧决定。 2. 当我看到"ping 通网关、域名解析不了"，先去 L7 的 DNS，不要重装网卡驱动——层错了，查多久都是白查。 3. 当我看到"小请求正常、大请求卡死"，先量 MTU，因为分片丢失的表现和"网络不稳"一模一样。 4. 当我看到 <code>SYN_SENT</code> 堆积，先查出方向的防火墙与对端端口，不要看应用日志——应用还没拿到 socket。 5. 当我看到 TLS 握手成功但立刻断，先看 ALPN，因为 h2 与 http/1.1 谈崩时两边都不报错，只是各自挂断。</p>
+<p>---</p>
+<h2>九、边界（写清楚，免得以后忘）</h2>
+<ul>
+<li>能看：自己的 ARP、路由、连接表、DNS 缓存、自己网卡的统计、发给自己包的回应。</li>
+<li>能听：广播与组播（mDNS、SSDP、ARP 请求）。</li>
+<li>不看：别人的单播帧、别人的 TLS 内容、别人的 DNS 查询。</li>
+<li>理由不是"技术难"，是"那不是我的通信"。抓自己的叫诊断，抓别人的叫侵入，同一套工具，两种性质。</li>
+</ul>
+<p>---</p>
+<h2>十、这份东西以后怎么用</h2>
+<p>对着它查故障时，只做两件事：先定位在<strong>哪一层</strong>（用"断了会看见什么"那列反推），再定位在<strong>哪个交接点</strong>（用"谁先放弃"那列）。</p>
+<p>两件事都定完，剩下的就是换件或者改配置，不需要再想。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>
