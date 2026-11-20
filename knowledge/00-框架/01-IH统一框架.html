@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IH 统一框架</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/knowledge/">← 知识库</a></div>
+<h1>IH 统一框架</h1>
+<p class="meta">00-框架/01-IH统一框架.md　1,334 汉字</p>
+<h1>IH 统一框架</h1>
+<blockquote>一句话：<strong>I 是内禀，H 是从关系里读出来的那个 x。平衡不是静态相等，是一秒内的下潜与回撤。</strong></blockquote>
+<blockquote>状态：已核（基本点来自 <code>3-settled/week/IH.docx</code>，3335 字；骨架来自 IH 轧账对话 34 段 + 规范 v1.1）</blockquote>
+<h2>一、两个词</h2>
+<p><strong>Hom</strong>：从外面看。所有指向它的、它指向的关系的合集。</p>
+<ul>
+<li>决定"你被看成什么"，不决定"你是什么"。</li>
+<li>是切片：一次采样只拿到一个投影。</li>
+<li>可经营、可瞄准、可定价、可误读。</li>
+</ul>
+<p><strong>Intrinsic</strong>：从里面看。它自己的环、厚度、生成能力。</p>
+<ul>
+<li>决定"你能长出什么"，不决定"别人能不能看见"。</li>
+<li>不可速成：只能叠，不能被直接暴露。</li>
+<li>不靠赋值就存在，但没有赋值就不在场。</li>
+</ul>
+<p>名字本身是临时的。原文写得很清楚：Intrinsic 只是"不可表的那个东西"的代称，等数学底子够了再纠正。</p>
+<h2>二、基本点：一秒下潜，一秒回撤</h2>
+<p>这是整套东西的机关，不在概念表里，在时间上。</p>
+<p>原文：「从 Hom 回归 Intrinsic，如果能够在前期的积累中，做到足够的训练性，能够在 1 秒内实现 Hom 的下探以及快速的收回，就能做到快速的抉择。」</p>
+<p>拆成三步：</p>
+<p>| 步 | 动作 | 花多久 | |---|---|---| | 下探 | 用一个 Hom 去读：这条消息、这个人、这个盘口在说什么 | 秒级 | | 收回 | 回 Intrinsic 校验：我的截面支持这个判断吗 | 秒级 | | 修正 | 天平倾斜后重新摆正，允许再倾斜 | 持续 |</p>
+<p>三个失败形态，原文都写了：</p>
+<p>1. <strong>只探不收</strong>：一直待在 Hom 里，被读数牵着走。追涨满仓之后那段兴奋，就是这个。 2. <strong>只收不探</strong>：一直待在 Intrinsic 里，觉得外面读不懂自己。工作里那些"没人欣赏的规范"就是这个。 3. <strong>探了收不回</strong>：以为自己在思考，其实在自引。原文最后两行是作者自己踩的刹车——"写的什么玩意儿，车轱辘一堆""哟哟哟，又搁这自引呢"。</p>
+<p>所以这套东西的验收标准不是"想得深"，是<strong>回来的速度</strong>。</p>
+<h2>三、三个平衡域</h2>
+<p>同一套跳转，三个战场，倾斜的方向不同：</p>
+<p>| 域 | 倾斜长什么样 | 该收回到哪 | |---|---|---| | 工作 | 习惯性保证"极限的兼容性"：把规范、术语、沟通成本都优化到别人跟不上的精度 | 收回到"这笔账记谁的"——见 <a href="../ih-rel/concepts/01-两本账.md">两本账</a> | | 别人 | 展开太多，别人跟不上，显得没情商；事后才醒悟，脑子动得太慢 | 收回到"要不要现在说"——见 <a href="../ih-rel/concepts/09-显示层三档.md">显示层三档</a> | | 交易 | Hom 简单过手就下注，多巴胺上来就满仓，冲动冒充直觉 | 收回到"这是判断还是兴奋"——见 <a href="../ih-rel/playbook/02-反强迫四环节.md">反强迫四环节</a> |</p>
+<p>三个域的共性：<strong>倾斜本身不是问题，收不回来才是。</strong></p>
+<h2>四、主从与生成</h2>
+<p>不是五五平衡，是 <strong>I 主 H 用</strong>：</p>
+<p>| 权力 | 归谁 | 说明 | |---|---|---| | 生成权 | Intrinsic | 截面只能从环里长出来，赋值不生产任何东西 | | 显形权 | Hom | 不被赋值的东西，对外等于不存在 | | 定价权 | Hom | 但可以收回来自己用（定价权外包的反面） |</p>
+<p>认识靠 H，生成靠 I。不是对立，是同一次拆分的两面。</p>
+<h2>五、为什么拆两个库</h2>
+<p>| 库 | 采样面 | 回答的问题 | 偏向 | |---|---|---|---| | ih-rel | 人与人之间的 Hom | 我怎么被读、怎么被定价、怎么读别人 | H 侧 | | ebooks | 市场、制度、人群的 Intrinsic | 世界怎么运转、价格怎么形成、评价怎么失真 | I 侧 |</p>
+<p>ih-rel 是"我在关系里的账"，ebooks 是"世界这本大账怎么记的"。合并的例子：ih-rel 说"定价发生在你不在场的房间"，ebooks 里的市场有效性、财报失真、制度激励，说的正是那个房间里在发生什么。</p>
+<h2>六、三态判决</h2>
+<p>| 态 | 含义 | 对应 | |---|---|---| | 做 | 结构成立，能量投放 | EXECUTE | | 缓 | 条件未到，冻结判据 | HOLD | | 不做 | 结构不成立，当场作废 | VETO |</p>
+<p>判决留给自己，不留给别人。判官先被测。</p>
+<h2>七、判据三条（不可动）</h2>
+<p>1. <strong>不伪造结果</strong>：事实层一笔不做。 2. <strong>状态变更有迹</strong>：关键动作留时间戳。 3. <strong>对外动作有确认边界</strong>：需要对方不知情才能维持的结构 = 违建。</p>
+<p>结构层（时点、顺序、详略、坐标系、编排、隐藏）可以合法用到极致；事实层一笔不碰。</p>
+<h2>八、两库的接口</h2>
+<ul>
+<li>ih-rel 的每条概念都可以问：它在 ebooks 里有没有对应的机制样本？</li>
+<li>ebooks 的每条机制都可以问：它在 ih-rel 里对应哪一笔账？</li>
+<li>接口写在两边的链接段里，双向写。</li>
+</ul>
+<h2>九、不要做的事</h2>
+<ul>
+<li>不要把 H 侧的经营说成 I 侧的增长（注水）。</li>
+<li>不要把 I 侧的积累当成 H 侧的通行证（错账）。</li>
+<li>不要用 H 侧的反馈给 I 侧估值（采样不是判决）。</li>
+<li>不要把"想得深"当成完成。想完要回来，回来才算数。</li>
+</ul>
+<h2>附：原文的自我刹车</h2>
+<p>IH.docx 最后两行是这个体系的自证：</p>
+<blockquote>写的什么玩意儿，车轱辘一堆，说啥玩意呢，跳出去，该干嘛干嘛</blockquote>
+<blockquote>哟哟哟，又搁这自引呢，自引就是……</blockquote>
+<p>这就是"一秒回撤"的实操演示——不是靠意志，是靠一句自嘲把循环掐断。<strong>这条要留着，它比前面九节都管用。</strong></p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

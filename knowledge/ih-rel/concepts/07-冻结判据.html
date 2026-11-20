@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>冻结判据</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/knowledge/">← 知识库</a></div>
+<h1>冻结判据</h1>
+<p class="meta">ih-rel/concepts/07-冻结判据.md　516 汉字</p>
+<h1>冻结判据</h1>
+<blockquote>判据写在事件之前，出现即冻结，事后调用不算触发。</blockquote>
+<blockquote>状态：已核</blockquote>
+<blockquote>出处：IH轧账对话记录_2026-11-05.md:15、69-70；IH轧账规范_v1.1.md:105-113</blockquote>
+<h2>机制</h2>
+<p>事前写下停止线，写下之后：</p>
+<ul>
+<li>判据本身不能被修正（只能新立一条，且要写明为什么旧的废了）</li>
+<li>触发即执行，不许重新谈判</li>
+<li>事后加判据不算触发——这叫事后指控</li>
+</ul>
+<p>为什么必须冻结：因为<strong>难受出现的时候，正好是判断力最差的时候</strong>。那个时刻你会本能地想"再等等""说不定下个月就好了"，而"下个月"永远不会自己到。</p>
+<p>规范里的样本（第十层点位表）：</p>
+<p>| 触发条件 | 判据 | 动作 | |---|---|---| | 机制被弱化而不是被验证 | 半年 | 重开审计，不看口头保证 | | 只给增量补偿、不给存量 | 第一次出现 | 谈一次，谈不成不谈第二次 | | 显示层被要求穿透到机制 | 每次 | 挡回去，只交割结果 |</p>
+<h2>判据</h2>
+<p>三个必须冻结的东西（写下来之前不算数）：</p>
+<p>1. 停止线：到哪一步就不干了（时间 / 次数 / 金额） 2. 复核点：什么时候回来看这条线（不能写成"以后"） 3. 谁执行：自己执行，不能挂在对方承诺上</p>
+<p>自检一句：<strong>我现在说的这条判据，是不是在事情发生之前就写下了？</strong></p>
+<h2>反例</h2>
+<ul>
+<li><strong>事后加判据</strong>：出问题了才说"其实我早就觉得不行"。这不是判据，是情绪，不产生动作。</li>
+<li><strong>判据被"情况特殊"覆盖</strong>：每覆盖一次，判据的效力就少一层。覆盖三次之后它就只剩名字。</li>
+<li><strong>把判据写成愿望</strong>："希望他能改"不是判据，没有可观察的触发点。</li>
+</ul>
+<h2>链接</h2>
+<ul>
+<li>相关概念：<a href="03-难受发生器.md">难受发生器</a>、<a href="10-定价不在场.md">定价不在场</a></li>
+<li>相关判例：<a href="../cases/01-半年耗散.md">半年耗散</a>、<a href="../cases/05-走偏了.md">走偏了</a></li>
+<li>外部样本：<code>ebooks/books/海龟交易法则.md</code>（入场前定好止损，入场后只执行）</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

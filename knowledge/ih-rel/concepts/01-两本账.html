@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>两本账</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/knowledge/">← 知识库</a></div>
+<h1>两本账</h1>
+<p class="meta">ih-rel/concepts/01-两本账.md　514 汉字</p>
+<h1>两本账</h1>
+<blockquote>所有精力只能落进两本账之一，落错了比不落更贵。</blockquote>
+<blockquote>状态：已核</blockquote>
+<blockquote>出处：IH轧账对话记录_2026-11-05.md:36-42；IH轧账规范_v1.1.md:24-44</blockquote>
+<h2>机制</h2>
+<p>| 账本 | 谁定价 | 定价点 | 资产性质 | |---|---|---|---| | 自账 | 人生扩展 | 能力增厚、可迁移的关系与截面 | 期权，可携带，跨环境兑现 | | 场账 | 当前定价环境 | 交付物、评估者的视野 | 场内价格，环境撤则归零 |</p>
+<p>同一个动作可以同时记两本（比如做 agent 任务时顺手积累 harness 经验），但<strong>结算必须分开</strong>。</p>
+<p>五条记账规则（规范 v1.1 第三层）：</p>
+<p>1. 两本账独立结算，禁止跨账比较。 2. 可携带性清单：截面可携带；关系可携带；赋值不可携带。 3. 转移支付当天落地：场账省下的精力，当天划入自账。 4. 收益无回报 = 非零点集 ∩ 定价点集 = ∅。失衡不是 Hom 太多，是账记错。 5. 沉没成本 = Hom 存量误记为未来价格。</p>
+<h2>判据</h2>
+<p>花精力之前问一句：<strong>这笔进哪本账。</strong></p>
+<p>一句话就能分：三个月后这个环境消失，这笔东西还在吗？在 = 自账，不在 = 场账。</p>
+<p>更细的分法用 2×2：</p>
+<p>| | 赋值稀疏 | 赋值稠密 | |---|---|---| | 环厚 | 过度 I：有内容但不在场（枯竭） | 平衡 | | 环薄 | 双亡 | 过度 H：显形的是零（耗散） |</p>
+<h2>反例</h2>
+<ul>
+<li><strong>把自账当场账记</strong>：为了"表现得专业"去啃一个跟人生扩展无关的技术点，账记场账，回报是零或一次性。（03 段）</li>
+<li><strong>把场账当自账记</strong>：公司里被夸、被倚重，就以为自己在增值。环境一撤，账面归零。（16 段半年耗散就是这个形状）</li>
+<li><strong>转移支付不落地</strong>：场账省下的精力不划走，省下来的能量变成萎缩，不是积累。（03 段"不消耗精力"那一行）</li>
+</ul>
+<h2>链接</h2>
+<ul>
+<li>相关概念：<a href="02-可携带性.md">可携带性</a>、<a href="03-难受发生器.md">难受发生器</a></li>
+<li>外部样本：<code>ebooks/themes/投资-价值与安全边际.md</code>（安全边际 = 价格与价值的差，同构于两本账的差）</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

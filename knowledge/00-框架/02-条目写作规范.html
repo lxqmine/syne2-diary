@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>条目写作规范</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/knowledge/">← 知识库</a></div>
+<h1>条目写作规范</h1>
+<p class="meta">00-框架/02-条目写作规范.md　386 汉字</p>
+<h1>条目写作规范</h1>
+<blockquote>目的：让两个库长得一样，三个月后还能读。</blockquote>
+<h2>一、文件名</h2>
+<ul>
+<li>概念：<code>concepts/NN-名字.md</code>，中文名，短，不带标点。</li>
+<li>判例：<code>cases/NN-事情.md</code>，写"发生了什么"，不写结论。</li>
+<li>动作卡：<code>playbook/NN-动作.md</code>，动词开头。</li>
+<li>书：<code>books/书名.md</code>，用书名，不用文件名（文件名里有 z-library 之类噪音）。</li>
+<li>主题：<code>themes/领域-侧面.md</code>。</li>
+</ul>
+<h2>二、条目骨架</h2>
+<pre><code>
+# 名字
+
+&gt; 一句话概括。
+&gt; 状态：已核 / 目录级 / 待核
+&gt; 出处：路径:行号 或 "推"
+
+## 机制
+为什么是这样，不是"应该这样"。
+
+## 判据
+怎么判断它出现了。要能落到动作。
+
+## 反例
+什么时候这条会害人。
+
+## 链接
+- 相关概念：（同库）
+- 外部样本：（ebooks 或别处）
+</code></pre>
+<p>四段可以合并，但"判据"和"反例"不能省——没有判据的条目是感想，没有反例的条目会把人带沟里。</p>
+<h2>三、引用规则</h2>
+<p>| 来源 | 写法 | |---|---| | 对话原文 | <code>IH轧账对话记录_2026-11-05.md:236</code> | | 规范 | <code>IH轧账规范_v1.1.md:86</code> | | 书 | <code>书名 · 第N章</code>（读到哪写到哪） | | 自己想 | <code>推</code> |</p>
+<p>不给行号的引用等于没引用。</p>
+<h2>四、状态标记的含义</h2>
+<ul>
+<li><strong>已核</strong>：正文读完，条目里每句话都能指回去。</li>
+<li><strong>目录级</strong>：只看了目录/章节名/元数据，正文没读。写"这本书管什么"可以，写"这本书说了什么"不行。</li>
+<li><strong>待核</strong>：领域常识或推断。可以写，必须标。</li>
+</ul>
+<h2>五、长度</h2>
+<p>一条 40~120 行。超过就是两条，拆。</p>
+<h2>六、每加一条，回去改 INDEX</h2>
+<p>INDEX 是目录，不是历史记录。新条目插进对应分组，不要往末尾追加。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>
