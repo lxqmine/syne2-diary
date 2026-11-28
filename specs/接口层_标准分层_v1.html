@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>接口层标准分层 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>接口层标准分层 v1</h1>
+<p class="meta">接口层_标准分层_v1.md　1,518 汉字</p>
+<h1>接口层标准分层 v1</h1>
+<blockquote>用途：给"一个外部平台"或"我们自己一套服务"画同一张分层图，做到<strong>任何一次失败都能落到某一层</strong>。</blockquote>
+<blockquote>口径：Web / API 网关的通用分层，不发明新层。七层从外到内，L0–L6，另加一条贯穿的 L7（可观测性，不是层，是横切）。</blockquote>
+<p>---</p>
+<h2>0. 一张表看完</h2>
+<p>| 层 | 名字 | 一句话职责 | 典型组件 | 它唯一负责的判断 | | --- | --- | --- | --- | --- | | L0 | 客户端 / 调度 | 找到"哪台机器" | DNS、anycast、GSLB、客户端重试 | 域名能不能解析、解析到谁 | | L1 | 接入层（Edge） | 让请求进来、尽量不进来 | CDN、TLS 终止、静态缓存、WAF 前置 | 连接建立与缓存命中 | | L2 | 安全层（WAF / Bot） | 判断"这个请求是不是人/是不是被允许的模式" | WAF、反爬、验证码、IP 信誉、CC 防护 | 拦还是不拦 | | L3 | 网关层（API Gateway） | 判断"这个调用方是谁、能调到哪、调多快" | APISIX、Kong、Envoy、自研网关、trpc 网关 | 认证、授权、限流、路由、协议转换 | | L4 | 服务层（Application / BFF） | 编排：把一次调用拆成几件事 | BFF、聚合服务、工作流 | 这次请求要做哪几步 | | L5 | 领域层（Domain） | 业务规则与不变量 | 聚合、领域服务 | 这一步允不允许 | | L6 | 数据层（Data） | 持久化与缓存 | DB、Redis、MQ、对象存储 | 存不存得住、读得准不准 | | L7 | 可观测（横切） | 让上面每层都能被定位 | trace、metric、log、audit | 出问题归到哪层 |</p>
+<p><strong>铁律</strong>：每一层只回答自己那一列的问题。跳层判断＝故障定位时永远找不到层。</p>
+<p>---</p>
+<h2>1. L0 客户端 / 调度（DNS、GSLB、客户端重试）</h2>
+<ul>
+<li><strong>职责</strong>：域名 → IP；就近接入；客户端侧的连接复用、超时、重试（这一层最容易把下游打死）。</li>
+<li><strong>证据</strong>：<code>dig</code>/<code>nslookup</code> 结果、<code>status=000</code>（连不上）、TLS 握手失败。</li>
+<li><strong>失败表现</strong>：解析到错地址（企业内网 DNS 劫持）、整段不可达、证书错误。</li>
+<li><strong>判据</strong>：<code>curl -v</code> 卡在 <code>Trying …</code> 或 <code>SSL</code> 阶段 → L0/L1，不是业务层。</li>
+</ul>
+<h2>2. L1 接入层（CDN / TLS / 静态缓存）</h2>
+<ul>
+<li><strong>职责</strong>：TLS 终止、静态资源缓存、压缩、HTTP/2-3。<strong>动态请求在这里只做"过路"。</strong></li>
+<li><strong>证据</strong>：<code>server</code>、<code>x-cache-*</code>、<code>age</code>、<code>expires</code> vs <code>date</code>、<code>via</code>。</li>
+<li><strong>失败表现</strong>：缓存了不该缓存的响应、TLS 版本不匹配、回源失败。</li>
+<li><strong>判据</strong>：<code>expires</code> 比 <code>date</code> 早一秒（B站）说明边缘在改头；<code>X-Cache: BYPASS</code> 说明没命中。</li>
+</ul>
+<h2>3. L2 安全层（WAF / Bot Management）</h2>
+<ul>
+<li><strong>职责</strong>：拦截自动化与攻击模式；验证码；指纹校验；粗粒度限流（按 IP/UA）。</li>
+<li><strong>证据</strong>：<code>403</code> 纯文本（字节数固定）、<code>412</code>、<code>432</code>、302 → 验证码页/登录页、<code>X-Login-visitor</code>。</li>
+<li><strong>失败表现</strong>：<strong>没有语义的业务拒绝</strong>——最常见的是"200 但页面是验证码"。</li>
+<li><strong>判据</strong>：响应体不是 JSON、字节数是整数（46B/50B）、或 HTML 里出现 <code>captcha</code>/<code>安全验证</code> → L2。</li>
+</ul>
+<h2>4. L3 网关层（API Gateway）</h2>
+<ul>
+<li><strong>职责</strong>：认证（Authentication）→ 授权（Authorization）→ 限流（Rate limiting/Quota）→ 路由（Routing）→ 协议转换（REST↔gRPC）→ 请求/响应改写 → 灰度。</li>
+<li><strong>证据</strong>：<code>401</code> + <code>WWW-Authenticate</code>、<code>x-ratelimit-*</code>、<code>Retry-After</code>、<code>x-envoy-*</code>、<code>x-b3-*</code>、<code>server: TAPISIX/…</code>、路由前缀（<code>/trpc.pkg.svc.method</code>、<code>/v1/</code>、<code>/x/</code>）。</li>
+<li><strong>失败表现</strong>：<code>401</code>/<code>403</code>/<code>429</code>；签名错误；路由 404（endpoint 不存在 vs 未暴露，要分开）。</li>
+<li><strong>判据</strong>：带 <code>Bearer</code>/签名能过、不带就 401 → L3；<code>429</code> 或 <code>x-ratelimit-remaining: 0</code> → L3 限流。</li>
+</ul>
+<p><strong>网关层要固定回答四件事</strong>：①鉴权放哪（header / cookie / query 签名）；②谁的身份（调用方 vs 最终用户，两段式）；③限流维度（IP/租户/key/端点）；④错误信封（<code>401</code> 是网关的，业务码是 L4/L5 的——两者不能混在一个字段里）。</p>
+<h2>5. L4 服务层（Application / BFF）</h2>
+<ul>
+<li><strong>职责</strong>：编排——一次调用拆几步、调哪些内部服务、聚合、降级、超时预算、幂等键。</li>
+<li><strong>证据</strong>：<code>x-trace-id</code>/<code>b3</code> 贯穿、响应里的聚合字段、<code>degraded response</code>（某一路空但整体 200）。</li>
+<li><strong>失败表现</strong>：部分降级（200 + 某字段空）、超时、重试放大。</li>
+<li><strong>判据</strong>：业务码 0 但字段空 → L4 降级，不当空结果。</li>
+</ul>
+<h2>6. L5 领域层（Domain）</h2>
+<ul>
+<li><strong>职责</strong>：业务规则、不变量、状态机。<strong>这一层才该说"你没有权限做这件事"。</strong></li>
+<li><strong>证据</strong>：稳定业务码（<code>-101</code> 未登录、<code>-403</code> 权限不足、<code>code:-101</code>）。</li>
+<li><strong>失败表现</strong>：业务拒绝、状态冲突（409）。</li>
+<li><strong>判据</strong>：同一请求换个账号就成功 → L5 授权/状态；换账号仍失败 → L3。</li>
+</ul>
+<h2>7. L6 数据层（Data）</h2>
+<ul>
+<li><strong>职责</strong>：持久化、缓存一致性、读写分离、队列。</li>
+<li><strong>证据</strong>：延迟尖刺、<code>500</code>/<code>503</code>、部分数据缺失、重复 id。</li>
+<li><strong>失败表现</strong>：慢、丢、脏读。</li>
+<li><strong>判据</strong>：同一请求重试两次结果不同 → L6；两次一致但值错 → L5。</li>
+</ul>
+<h2>8. L7 可观测（贯穿）</h2>
+<ul>
+<li><strong>三件套</strong>：trace（<code>x-request-id</code>/<code>b3</code>/<code>x-b3-traceid</code>）、metric（QPS/延迟/错误率/配额余量）、log（结构化 + 采样）。</li>
+<li><strong>要求</strong>：每一层都要往 trace 里塞自己的标识，否则跨层定位只能靠猜。</li>
+<li><strong>反例</strong>：微博把内网主机名漏在响应头里——这是信息泄漏，但对排障是"意外的可观测性"，说明它没做统一 trace id。</li>
+</ul>
+<p>---</p>
+<h2>9. 分层与常见错误语义的对齐</h2>
+<p>| 层 | 该层"该有"的语义 | 常见越界（错误地把别的层的问题塞这里） | | --- | --- | --- | | L1 | 缓存命中/未命中 | 把业务错误缓存 5 分钟 | | L2 | 拦/不拦 | 用 403 表达"参数错了" | | L3 | 401/403/429/404 路由 | 把业务码塞进 HTTP status（或在 header 里塞业务码） | | L4 | 降级/聚合失败 | 把降级当成功返回空数组 | | L5 | 业务拒绝 | 把鉴权错误说成业务规则 | | L6 | 5xx/超时 | 用 200 + 空数据掩盖写失败 |</p>
+<p>---</p>
+<h2>10. 落到我们自己这套（dsh-social）的分层映射</h2>
+<p>| 层 | 我们的对应物 | | --- | --- | | L0 | 用户本机网络（决定了 YouTube/X 整段不可达） | | L1 | 各平台的 CDN（我们只观察响应头） | | L2 | 412 / 403+46B / 403+50B / 302→login，adapter 抛 <code>block:</code> | | L3 | cookie/session、wbi 签名、<code>a_bogus</code>、<code>x-s</code>，adapter 抛 <code>auth:</code>/<code>sign:</code> | | L4 | 我们的 adapter 自身（<code>hot</code>/<code>search</code>/<code>text</code> 是一层编排，负责降级与归一化） | | L5 | 平台业务码（<code>-101</code>、<code>code:-101</code>），抛 <code>api:</code> | | L6 | 平台数据一致性（我们不可见，只能靠 Probe Log 记录） | | L7 | <code>Probe Log</code> + 每条的 <code>layer</code> 字段 |</p>
+<p><strong>这条映射的价值</strong>：任何一次失败，先问"它落在 L0–L6 哪一层"，再决定是重试、换凭据、换路，还是承认"这门没有"。</p>
+<p>---</p>
+<h2>11. 三层错误与四个错误前缀的对应</h2>
+<p>| 前缀 | 出自哪层 | 处理 | | --- | --- | --- | | <code>block:</code> | L0 / L1 / L2 | 不重试；换出口或承认不可达 | | <code>auth:</code> | L2（visitor） / L3（401/429） | 补凭据或退避；429 走 <code>Retry-After</code> | | <code>sign:</code> | L3（签名校验失败） | 修签名算法，不重试原请求 | | <code>api:</code> | L4（降级） / L5（业务拒绝） / L6（5xx） | 读业务码；降级不要当空结果 |</p>
+<p>---</p>
+<h2>12. 标准分层的验收清单（自己写网关时用）</h2>
+<p>1. 每一层只回答自己那一列的问题，且<strong>都能被一个响应头或状态码识别</strong>。 2. 401/403/429 由 L3 出，业务码由 L5 出，两者不在同一字段。 3. 降级（L4）有显式标记，不伪装成成功。 4. 每层往 trace 里写自己的 id，一个 trace 能横穿到 L6。 5. 限流维度写在文档里（IP/租户/key/端点），并有 <code>Retry-After</code>。 6. 404 的含义写清：endpoint 不存在（L3 路由）vs 资源不存在（L5）vs 未暴露（product-level absence）。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>社媒观测：七段整理 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>社媒观测：七段整理 v1</h1>
+<p class="meta">社媒观测_七段整理_v1.md　1,752 汉字</p>
+<h1>社媒观测：七段整理 v1</h1>
+<p>按"口径 / 机制 / 接口 / 工具 / 同类参考 / 解决方案 / 实现效果"整理。七段缺一段，就等于没说清这东西能不能用。</p>
+<p>---</p>
+<h2>一、口径</h2>
+<p><strong>要观测的东西</strong>：一件事在社交平台上有没有共识、共识是什么形状、谁在反对。不是"热度多少"，是"主流评价标准长什么样"。</p>
+<p>先把"主流"拆成三个可操作量，否则它只是个形容词：</p>
+<p>| 量 | 定义 | 怎么算 | 陷阱 | | --- | --- | --- | --- | | 覆盖度 | 有多少人把这件事当议题 | 各平台该话题的条目数 ÷ 该平台当日条目数 | 平台体量差三个数量级，不能直接加 | | 共识度 | 同一条判断被复述的比例 | 前 50 条里指向同一判断的条数 ÷ 50 | 榜是算法筛过的，本身就是共识的回音 | | 分歧点 | 被判为错的那一侧 | 前 50 条里的反对句式（"别信""其实不是""辟谣"）计数 | 反对常被压在长尾，榜上看不见 |</p>
+<p><strong>各平台的原始口径不同，必须先归一再用</strong>：</p>
+<ul>
+<li>B站：播放/点赞/弹幕，热门接口按综合分排（含时效），不纯按播放。</li>
+<li>微博：热搜给一个"热度"整数（如 2066 万），带标签（爆/新/热），是搜索量与讨论量的混合体。</li>
+<li>抖音：<strong>没有匿名榜</strong>。抓到的是推荐流，按个性化排序，不带排位——口径是"给我的"，不是"给大家的"。</li>
+<li>腾讯/爱奇艺：热词，是搜索联想词，不是内容榜。口径约等于"此刻大家在搜什么"。</li>
+<li>小红书：无匿名入口，登录后是"发现"流，也是个性化。</li>
+</ul>
+<p>一句话口径：<strong>只有微博热搜、B站热门、腾讯/爱奇艺热词这三类能当"公共口径"用；抖音和小红书只能当"我的口径"，不能拿来说"主流"。</strong></p>
+<p>---</p>
+<h2>二、机制</h2>
+<p>三层，按"平台愿不愿意给"分：</p>
+<p>1. <strong>公开接口层（最省）</strong>：GET + 明文字段，无签名。</p>
+<ul>
+<li>B站 <code>api.bilibili.com/x/web-interface/popular</code></li>
+<li>微博 <code>weibo.com/ajax/side/hotSearch</code></li>
+<li>腾讯 <code>pbaccess.video.qq.com/trpc.../GetHotWords</code>（<code>appID</code>/<code>appKey</code> 在 query 里，明文）</li>
+<li>爱奇艺 <code>mesh.if.iqiyi.com/portal/lw/search/keywords/hotList</code></li>
+<p>2. <strong>登录态层</strong>：要 cookie，但仍是 HTTP。</p>
+<li>B站搜索接口（<code>search/type</code>）直接 412，需要 wbi 签名 + buvid。<strong>2026-11-23 已实现</strong>：<code>lib/bili.mjs</code> 按 <code>wbi_img</code> 取 img/sub 两段 key，用 64 项混淆表拼出 mixin key，参数按字典序排序后 md5 签 <code>w_rid</code>，另带 <code>buvid3</code>（<code>x/frontend/finger/spi</code> 匿名可取）——搜索、字幕、评论都不再走浏览器。</li>
+<p>3. <strong>浏览器层（最贵、最稳）</strong>：CDP 接管一个真 Edge 实例，跑 DOM 提取。</p>
+<li>抖音热榜/搜索、小红书搜索、B站搜索页。</li>
+</ul>
+<p><strong>关键设计</strong>：抽象只能放在 adapter 层。三家是三种鉴权姿势（cookie / query 签名 / 浏览器会话），在 HTTP header 层做统一抽象必定崩。</p>
+<p>---</p>
+<h2>三、接口</h2>
+<p>统一四个动作，形状固定：</p>
+<pre><code>
+hot(platform, n)              → [{ platform, rank, title, author, url, extra }]
+search(platform, q, n)        → 同上
+text(platform, url)           → { platform, title, url, extra:{desc} }
+login(platform) / cookies()   → 登录态存档
+</code></pre>
+<p>约束三条：</p>
+<p>1. 平台差异只许放进 <code>extra</code>，不许改顶层字段。 2. adapter 里不做跨平台判断（"这条算不算主流"不在 adapter 里回答）。 3. 失败必须带层：</p>
+<p>| 前缀 | 含义 | 处理 | | --- | --- | --- | | <code>auth:</code> | 没登录 / 登录失效 | 去登录，别重试 | | <code>sign:</code> | 签名不对 | 换通道走浏览器 | | <code>api:</code> | 接口改版或返回非 JSON | 记一笔，改 adapter | | <code>block:</code> | 被拦 / 出口不通 | 换平台或换网络，重试无用 |</p>
+<p>---</p>
+<h2>四、工具</h2>
+<p>插件 <code>plugins/dsh-social</code>，六个工具进工具表（不用起服务）：</p>
+<p>| 工具 | 参数 | 回来什么 | | --- | --- | --- | | <code>social_platforms</code> | — | 八个平台、鉴权方式、可用动作、已存 cookie 概况 | | <code>social_hot</code> | <code>platform, n</code> | 该平台当下在推什么 | | <code>social_search</code> | <code>platform, q, n</code> | 标题/作者/链接/统计 | | <code>social_text</code> | <code>platform, url</code> | 正文或简介 | | <code>social_login</code> | <code>platform, seconds</code> | 开有头窗口停在登录页 | | <code>social_cookies</code> | <code>save, domain</code> | 把 cookie 存进 <code>.social/cookies.json</code> | | <code>social_bili</code> | <code>action,q,bvid,cid,n,tid</code> | 六个动作：hot/ranking/search/view/subtitles/comments，走真接口不靠浏览器 |</p>
+<p>配套 CLI（不依赖运行时）：</p>
+<pre><code>
+node tools/social/login.mjs weibo 150      # 有头登录 + 抓 cookie
+node tools/social/probe.mjs bilibili --n 20 # 同形输出，给脚本用
+</code></pre>
+<p>存档位置：<code>.social/cookies.json</code>，按平台键存，只读用于观测请求，不回写任何第三方客户端。</p>
+<h3>4.2 HTTP API（service 直接接入）</h3>
+<p>插件带 <code>webServer</code>，同一份能力不开进程、不加端口，挂在 GUI 那个端口上就能被别的机器/脚本调用（<code>config.token</code> 设了就要求 <code>?token=</code>）：</p>
+<p>| 方法 | 路径 | 参数 | 回来什么 | | --- | --- | --- | --- | | GET | <code>/social/api/platforms</code> | — | 八家的 key / auth / needs / actions | | GET | <code>/social/api/hot</code> | <code>platform,n</code> | <code>{platform, items[]}</code> | | GET | <code>/social/api/search</code> | <code>platform,q,n</code> | <code>{platform,q,items[]}</code> | | GET | <code>/social/api/text</code> | <code>platform,url</code> | <code>{item}</code> | | GET | <code>/social/api/bili</code> | <code>action=hot\|ranking\|search\|view\|subtitles\|comments</code>，<code>bvid,cid,q,n,tid</code> | 按 action 给 <code>items</code> 或 <code>item</code>；<code>subtitles</code> 直接带全文 | | GET | <code>/social/api/cookies</code> | — | 各平台已存 cookie 条数 |</p>
+<p>统一返回形状：成功 <code>{"ok":true,...}</code>，失败 <code>{"ok":false,"error":"sign: …","layer":"sign"}</code>，永远是 200 + 结构化的失败，不靠状态码判断。</p>
+<pre><code>
+curl "http://127.0.0.1:56708/social/api/bili?action=search&amp;q=%E9%BB%84%E4%BB%81%E5%8B%8B&amp;n=5"
+curl "http://127.0.0.1:56708/social/api/bili?action=subtitles&amp;bvid=BV1atse6EEfx"
+curl "http://127.0.0.1:56708/social/api/hot?platform=weibo&amp;n=20"
+</code></pre>
+<p>---</p>
+<h2>五、同类参考</h2>
+<p>| 路线 | 代表 | 口径 | 我的判断 | | --- | --- | --- | --- | | 官方 API | YouTube Data API v3（<code>chart=mostPopular</code>，每日 1 万配额） | 平台自报，最权威 | 出口不通，暂不可用；国内平台无等价物 | | 通用抓取库 | yt-dlp / MediaCrawler / social-analyzer（待核） | 抓页面，不定义口径 | 能补"没有接口"的洞，但要自己维护选择器 | | 商业数据 | 新榜、蝉妈妈、飞瓜（待核） | 各自归一后的榜单，口径不公开 | 付费换口径，仍是黑箱 | | 自建 | 本仓库 <code>plugins/dsh-social</code> | 自己定义并写死在文档里 | 口径可查、可改，代价是自己养 |</p>
+<p><strong>共同缺口</strong>：没有一家把"共识度/分歧点"当指标卖，卖的都是热度。所以"主流评价标准"这一层，只能自己算。</p>
+<p>---</p>
+<h2>六、解决方案</h2>
+<p>三条路径，按要回答的问题选：</p>
+<p><strong>A. 只观测热榜（今天已可用）</strong></p>
+<ul>
+<li>覆盖微博、B站、腾讯、爱奇艺四家公共口径。</li>
+<li>回答"今天大家在看什么"。成本：零登录，零维护。</li>
+<li>缺点：只有议题，没有立场。</li>
+</ul>
+<p><strong>B. 加搜索与正文（今天部分可用）</strong></p>
+<ul>
+<li>加 <code>social_search</code>，拿"前十条标题"人工看立场分布。</li>
+<li>回答"这件事大家怎么说"。成本：一条 cookie。</li>
+<li>缺点：搜索结果是相关度排序，不是民意抽样。</li>
+</ul>
+<p><strong>C. 每日快照 + 差异报告（下一步）</strong></p>
+<ul>
+<li>每天 08:00 抓一轮，存 <code>data/social/YYYY-MM-DD.json</code>，与前一天做集合差。</li>
+<li>指标：新进榜、掉榜、同一话题的条目数变化、五个平台的口径分歧。</li>
+<li>回答"这件事是在升温还是在退潮"。成本：一个 cron + 一块磁盘。</li>
+<li>这才是"看社区整体状态"的正确形态——要的是变化量，不是榜单截面。</li>
+</ul>
+<p>---</p>
+<h2>七、实现效果</h2>
+<p><strong>已通（2026-11-23 实测）</strong></p>
+<p>| 平台 | hot | search | 证据 | | --- | --- | --- | --- | | bilibili | ✓ | ✓ | 六个动作全通：热榜（<code>BV1atse6EEfx</code> 637 万播放 / 70 万赞 / 2.8 万评论）、排行榜、wbi 搜索（"黄仁勋" 5 条带播放与时长）、视频详情（含分P与 cid）、字幕（ai-zh/en/ja/es/ar/pt/th/id 八语，ai-zh 3,466 字）、评论（按热度，带点赞数） | | weibo | ✓ | ✗（要登录） | 匿名 52 条，榜首"黄仁勋恢复英伟达CEO职务"，热度 20,669,019 | | tencent | ✓ | ✗ | 热词"斗破苍穹剧场版 双帝之战" | | iqiyi | ✓ | ✗ | 热词"余红旧事" | | douyin | ✓（推荐流，非榜） | 未验 | 抓到 3 条，<code>raw</code> 含时长与点赞 | | xiaohongshu | ✗ | ✗ | 未登录；<code>/explore</code> 302 到 <code>/login</code> | | youtube / x | ✗ | ✗ | 全部 <code>status=000</code>，须代理 |</p>
+<p><strong>登录态存档</strong>：bilibili 13 条（含 SESSDATA）、douyin 67 条、weibo 0、xiaohongshu 0。</p>
+<p><strong>没做到的，明写</strong>：</p>
+<ul>
+<li>抖音拿不到"公共榜"，只能拿推荐流——它不能用来论证"主流"。</li>
+<li>微博搜索页要登录 cookie，未取到。</li>
+<li>YouTube/X 需要代理，当前出口整段不通。</li>
+<li>"共识度/分歧点"两个指标只有定义，没有实现（要 B/C 两条路径跑起来才有数据）。</li>
+</ul>
+<p>---</p>
+<h2>附：这套七段怎么复用</h2>
+<p>换任何一件事，七段不变：</p>
+<p>1. 口径——先把它拆成能量、能算、能出错的三条。 2. 机制——谁给数据、用什么方式给、代价多少。 3. 接口——固定形状 + 错误分层。 4. 工具——别人怎么用，一条命令或一个调用。 5. 同类参考——别人怎么做，口径差在哪。 6. 解决方案——分路径，标成本与缺点。 7. 实现效果——已通/未通，带数字，不带形容词。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

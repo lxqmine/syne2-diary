@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>接口层代码准则 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>接口层代码准则 v1</h1>
+<p class="meta">接口层_代码准则_v1.md　1,615 汉字</p>
+<h1>接口层代码准则 v1</h1>
+<blockquote>前两份：<code>接口层_标准分层_v1.md</code> 讲外部七层怎么分，<code>接口层_统一设计_v1.md</code> 讲八家平台怎么接。这一份只讲<strong>我们自己这层代码怎么摆</strong>。</blockquote>
+<blockquote>每条底线配一条能跑出来的判据；现状行号对应 <code>plugins/dsh-social</code> 写本文时的版本。</blockquote>
+<p>---</p>
+<h2>0. 一句话</h2>
+<p><strong>一个能力在代码里只活一份。多一份，就多一个漂的方向。</strong></p>
+<p>"写的时候小心"不是判据。判据是：违反了，能用一条 grep 抓出来。</p>
+<p>---</p>
+<h2>1. 四条底线</h2>
+<p>| # | 底线 | 要求 | 违反的长相 | 判据 | | --- | --- | --- | --- | --- | | 1 | 交互接口 | 一个能力只暴露一次，壳只做序列化 | 同一套 <code>if (action===)</code> 在 tool 面和 HTTP 面各一份 | 业务分支只在一个文件 | | 2 | 职责分离 | 通用层不认识具体平台 | 引擎里出现某家的字节阈值 | <code>lib/engine.mjs</code> 无平台名、无平台码 | | 3 | 常量统一 | 一个值一份；派生值不落盘 | 端口两个默认、UA 两份且不同 | 值 grep 命中 1 次 | | 4 | 业务清晰 | 同一状态码只映射到一个层 | 403 在 A 处算 auth、B 处算 sign | 映射表唯一 |</p>
+<p>---</p>
+<h2>2. 根：一次迁移只做了一半</h2>
+<p>README §结构 画的是声明式结构：<code>clients/&lt;平台&gt;/{platform.json, src/{endpoints,auth,index}.mjs}</code> + <code>lib/{loader,engine,session}.mjs</code>，"加一个平台不改引擎、不改 index.js"，平台清单只有一个来源。</p>
+<p>代码里还活着一套手写栈：</p>
+<p>| 栈 | 文件 | 平台清单从哪来 | 服务哪些入口 | | --- | --- | --- | --- | | 声明式 | <code>lib/engine.mjs</code> + <code>clients/*</code> | <code>lib/loader.mjs</code> 扫目录，9 家 | <code>social_&lt;p&gt;_api</code>、<code>social_call</code>、<code>/social/api/{endpoints,call}</code> | | 手写 | <code>lib/platforms.mjs</code>，347 行 | 文件里写死 8 个对象 | <code>social_hot/search/text</code>、<code>social_bili</code>、<code>/social/api/{hot,search,text,bili,platforms}</code> |</p>
+<p>于是同一件事有两份：</p>
+<ul>
+<li><strong>平台清单</strong>：<code>plats.meta()</code> 8 家（<code>platforms.mjs:321</code>，无 westock）；loader 9 家。<code>social_platforms</code>（<code>index.js:53</code>）看到 8 家，<code>social_endpoints</code>（<code>index.js:275</code>）看到 9 家。加一个平台只加一半，两个工具就开始说不同的话，且都不报错。</li>
+<li><strong>错误层</strong>：<code>engine.mjs:78-84</code> 412→<code>block:</code>、432→<code>auth:</code>、403 按响应体字节分 <code>sign:</code>/<code>auth:</code>；<code>platforms.mjs:25</code> 401/403/412/432 一律 <code>auth:</code>。同一个 403，走 <code>social_search</code> 是 <code>auth:</code>，走 <code>bilibili_api</code> 是 <code>sign:</code>。</li>
+<li><strong>cookie 罐</strong>：<code>session.mjs:22-33</code> 的 <code>cookieHeader()</code>；<code>platforms.mjs:31-45</code> 的 <code>biliJar()</code>。</li>
+<li><strong>微博 visitor</strong>：<code>session.mjs:49-69</code>（落盘、Chrome141、正则取 tid）与 <code>platforms.mjs:102-132</code>（内存 12h、Chrome131、JSON 取 tid）。</li>
+</ul>
+<p>这不是几个 bug，是一条根长出来的一整片枝。<strong>先定留哪套，后面五节才有意义。</strong></p>
+<p>目标只有一条单向依赖：</p>
+<pre><code>
+index.js（tool 壳 / HTTP 壳：取参、序列化）
+  → lib/semantic.mjs（hot/search/text：归一化）
+    → lib/engine.mjs（拼 URL、发、读信封）
+      → clients/&lt;平台&gt;/（签名、cookie、状态码特例）
+lib/constants.mjs（UA、默认条数、超时、端口）——谁都能读，不许写
+</code></pre>
+<p>反向依赖一处都不许有：<code>clients/*</code> 不 import <code>engine</code>，<code>engine</code> 不 import <code>clients/*</code>，<code>semantic</code> 不认平台名。</p>
+<p>---</p>
+<h2>3. 交互接口：两面一芯</h2>
+<p>规则三条：</p>
+<p>1. 动作表只写一次。tool 面和 HTTP 面都读同一张表。 2. 参数 schema 只写一次。<code>apiParams</code>（<code>index.js:228-241</code>）是唯一一份，HTTP 面从它派生。 3. 成功/失败形状只写一次。两面返回同一对象，差异只在渲染：tool 出文本，HTTP 出 JSON。</p>
+<p>现状：<code>social_bili</code>（<code>index.js:129-163</code>）和 <code>/social/api/bili</code>（<code>index.js:374-393</code>）各写了一遍六路 action 分派，且已经漂了——没字幕时 tool 回"没有字幕（可能没登录，或该视频无 AI 字幕）"，HTTP 回 <code>{languages:[], text:''}</code>。加第七个 action 要改两处，改一处就等于制造一个"只在某个入口错"的 bug。</p>
+<p>参数面也不齐：tool 面 <code>apiParams</code> 收 <code>method/params/body/form/path/rpc</code>；HTTP <code>/social/api/call</code>（<code>index.js:407-410</code>）只把 query 塞进 <code>params</code>。<strong>同一个 endpoint，从 HTTP 调不了 POST body。</strong> 这不是"没实现"，是两面各写了一份导致的形状缺失。</p>
+<p>---</p>
+<h2>4. 职责分离：谁可以认识谁</h2>
+<p>| 层 | 只许认识 | 不许认识 | | --- | --- | --- | | <code>index.js</code> | 参数、文本、JSON | 平台名、状态码、URL | | <code>semantic</code> | hot/search/text 的语义 | 平台名、签名算法 | | <code>engine</code> | spec 的字段、信封字段 | 哪家平台、签名细节、字节阈值 | | <code>clients/&lt;p&gt;</code> | 自己这一家的签名/cookie/状态码 | 别的平台、engine 内部 | | <code>constants</code> | 被所有人读 | 业务 |</p>
+<p>现成的越界四处：</p>
+<ul>
+<li><code>engine.mjs:81-84</code>：<code>bytes &lt;= 48 ? 'uifid' : bytes &lt;= 56 ? 'signature'</code> —— 抖音两级门槛写进通用引擎。而且 spec（<code>接口层_统一设计_v1.md</code> §3）记的是 <strong>46/50 字节</strong>，代码是 <strong>48/56</strong>。同一条判据两个数，引擎里那个还错着。</li>
+<li><code>engine.mjs:15-18</code>：<code>HEADERS_OF_INTEREST</code> 混装通用头（<code>content-type</code>）、B站头（<code>bili-status-code</code>、<code>x-bili-*</code>）、抖音头（<code>x-ms-token</code>）、限流头。应拆"通用 + spec 自带"。</li>
+<li><code>engine.mjs:28-29</code>：<code>if (typeof client.invoke === 'function')</code> —— 给 westock 的 MCP 开逃生舱。协议不同是一等公民，不该是引擎里的一个 if。</li>
+<li><code>platforms.mjs:15-28</code>：<code>getJson()</code> 自带一套错层映射，和 engine 并列。两套映射表 = 同一个错误两种说法。</li>
+</ul>
+<p>---</p>
+<h2>5. 常量统一：数副本</h2>
+<p><code>诊断_副本与覆盖_v1.md</code> 管的是<strong>同一个值被抄两份</strong>（回写覆盖、空值冲默认、半份配置）。这一节是它的第四形态：<strong>同一件事被写两遍，然后各自演化</strong>。</p>
+<p>| 值 | 副本位置 | 现状 | | --- | --- | --- | | UA | <code>session.mjs:7</code>（141+Edg）、<code>platforms.mjs:9</code>（131）、<code>bili.mjs:5</code>（140+Edg）、<code>browser.mjs:14</code>（131） | 四份、三个版本、五个指纹 | | 端口 9227 | <code>index.js:26,191</code>、<code>browser.mjs:11</code>、<code>dy.mjs:9</code>、<code>dy-tool.js:23</code>、<code>cordis.patch.yml:7</code> | 六处 | | <code>profileDir</code> <code>.tmp/edge-profile</code> | <code>index.js:26,192</code>、<code>browser.mjs:11</code>、<code>dy.mjs:9</code> | 四处（README 还有一处说明） | | 默认条数 20 | <code>index.js:73,90,360,366</code>；<code>platforms.mjs</code> 12 处；<code>bili.mjs:127,148,160,224</code> | 二十处 | | 超时 | <code>engine.mjs:67</code> 15000；<code>platforms.mjs</code> 9000/10000 | 三个数，无出处 | | 平台清单 | <code>platforms.mjs:321</code>、<code>clients/*/platform.json</code> | 8 vs 9 | | auth 词表 | <code>platforms.mjs</code> 的 <code>cookie/none/browser/proxy</code>；<code>platform.json</code> 的 <code>cookie+wbi</code> | 两套枚举 | | <code>endpointCount: 16</code> | <code>clients/bilibili/platform.json:12</code> | 派生值手写 |</p>
+<p>最后一条最像小聪明：endpoint 数量本来能算，抄进 json 就成了第二个真相，加一条 endpoint 它就开始说谎。</p>
+<p>规则：<strong>常量进 <code>lib/constants.mjs</code>；平台常量进 <code>clients/&lt;p&gt;/</code>；派生值不落盘。</strong> 判据是 grep 命中数 = 1（唯一例外是"读取处"）。</p>
+<p>---</p>
+<h2>6. 业务清晰：一套语义</h2>
+<ul>
+<li><strong>错误层只认字段，不认字符串。</strong> <code>engine.mjs:6</code> 已经给 <code>e.layer</code> 赋值，<code>index.js:345</code> 却用 <code>msg.split(':')[0]</code> 反解。message 里带一个冒号（<code>api: 未知 endpoint a:b</code>），层就解析错。改成读 <code>error.layer</code>，字符串只给人看。</li>
+<li><strong>HTTP 状态别一律 200。</strong> <code>index.js:346</code> 成功失败都回 200 + <code>{ok:false}</code>，调用方无法用状态码分流，等于把 <code>接口层_标准分层_v1.md</code> §11 的四层前缀废掉。按层给：<code>block:</code>→502、<code>auth:</code>/<code>sign:</code>→401/403、<code>api:</code>→200+<code>ok:false</code>（或 422），并把 <code>retryable</code> 写进同一个信封。</li>
+<li><strong>两种结果形状别混用。</strong> <code>platforms</code> 回 <code>{platform,rank,title,author,url,extra}</code>，<code>engine</code> 回 <code>{ok,appCode,status,bytes,body}</code>。上层只能按入口分支判断。命名分开：<code>call()</code> 回 raw，<code>hot/search/text()</code> 回 item。</li>
+<li><strong>成功也是语义。</strong> <code>platforms.mjs:209,293,300</code> 把"200 + 空列表"抛成 <code>api:</code>，这是对的；<code>engine</code> 对 <code>200 + 空 payload</code> 只回 <code>ok:true</code>。两种口径要统一到"降级不当空结果"（<code>接口层_统一设计_v1.md</code> §5）。</li>
+</ul>
+<p>---</p>
+<h2>7. 改的顺序（按收益/风险，不按好看）</h2>
+<p>1. <strong>平台清单收成一个来源。</strong> <code>social_platforms</code> 改读 loader 的结果（或让 loader 把 <code>platforms.mjs</code> 的语义动作补进 client）。验收：两个工具列出的 key 集合相等。 2. <strong>抽 <code>lib/constants.mjs</code>。</strong> 纯机械：UA/端口/profileDir/默认条数/超时各留一份。 3. <strong>合 action 分派。</strong> 一张表，tool 壳和 HTTP 壳都调它。 4. <strong>抖音 403 阈值下移</strong>到 <code>clients/douyin/src/auth.mjs</code>，顺手把 46/50 与实际对齐。 5. <strong>删 <code>platforms.mjs</code> 的重复栈</strong>，<code>semantic</code> 改成 engine 之上的薄层。这一步最大，必须在 1-4 之后、且有 smoke 可跑时做。</p>
+<p>1-2 可以在没有冒烟的情况下做（改完 <code>node -e "import('./plugins/dsh-social/index.js')"</code> 就能验语法与导出）；3-5 必须能跑 <code>smoke.mjs</code>。</p>
+<p>---</p>
+<h2>8. 验收清单</h2>
+<p>跑一遍，全绿才算数：</p>
+<p>1. <code>grep -n "action ===" plugins/dsh-social/index.js</code> → 0 行 2. <code>grep -rn "141.0.0.0\|131.0.0.0" plugins/dsh-social/lib</code> → 只在 <code>constants.mjs</code> 3. <code>grep -rn "9227\|edge-profile" plugins/dsh-social</code> → 只在 <code>constants.mjs</code>（+ 测试） 4. <code>grep -n "48\|56" plugins/dsh-social/lib/engine.mjs</code> → 无平台字节阈值 5. <code>social_platforms</code> 的 key 集合 == <code>social_endpoints</code> 的 key 集合 6. 同一个 403/412 在两条入口上抛同一个层 7. tool 面与 HTTP 面的参数 schema 是同一个对象（引用相等） 8. <code>platform.json</code> 里没有可计算字段（<code>endpointCount</code> 删掉或运行时算）</p>
+<p>---</p>
+<h2>9. 来处与局限</h2>
+<p>本次用户说"交互接口设计，职责分离，常量统一，业务清晰，代码的基本原则，因为这方面容易出错"。本文把那句话落成四条判据，每处破口都来自读 <code>plugins/dsh-social</code> 现码。</p>
+<p>局限：写本文时 <code>pwsh</code> 起不来（<code>Windows ACL temp root must be outside the workspace</code>，临时根落在工作区内 <code>.tmp\tmp</code>），<code>smoke.mjs</code> 没跑过；所有结论是读码，不是实测。行号以写作时版本为准。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

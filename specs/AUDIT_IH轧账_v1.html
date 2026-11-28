@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IH 轧账包 审查意见 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>IH 轧账包 审查意见 v1</h1>
+<p class="meta">AUDIT_IH轧账_v1.md　1,465 汉字</p>
+<h1>IH 轧账包 审查意见 v1</h1>
+<blockquote>审的对象：F:\workspace\syne2\junkyard\IH轧账包_2026-11-05</blockquote>
+<blockquote>四份材料：IH轧账规范_v1.1.md（160 行）、IH轧账规范_v1.1.docx、ih-ledger.skill（zip，SKILL.md 53 行 + references 四篇）、IH轧账对话记录_2026-11-05.md（392 行 / 34 段）</blockquote>
+<blockquote>审法：逐层抽"能落到动作的句子"→ 标它有没有落点（模板 / 判据 / 读者）→ 检查层与层之间有没有打架</blockquote>
+<blockquote>日期：2026-11-05</blockquote>
+<h2>一句话</h2>
+<p>一套用代数几何词汇写的职场精力会计学。判决标准相当硬（不变量三条、可携带性清单、需求只审报价点），取证和落地偏软（两张月度表只有名字，第十一层混进了私人处境，skill 没同步 v1.1）。</p>
+<h2>一、这套东西其实分三段，不是十一层递进</h2>
+<p>现在写成第一到第十一层，读法说"日常读第五层；遇事查对应层"。但实际内容是三种不同种类的东西被编成了一个序列：</p>
+<p>| 段 | 层 | 性质 | 用法 | |---|---|---|---| | 地基 | 1-4 | 模型与流程，可教 | 一次读懂，之后不再翻 | | 日常 | 5 | 反射，可练 | 天天用 | | 手册 | 6-10 | 场景词条，可查 | 遇事翻 | | 附录 | 11 + 判决模板 | 个人处境，会过期 | 阶段性 |</p>
+<p>"按层递进"暗示了从一到十一的顺序阅读，实际是"地基 → 反射 → 查表"。建议改目录为三段式，层号保留但并列而非递进。</p>
+<h2>二、第十一层应该搬家</h2>
+<p>第十一层写的是具体处境：转岗专案、交接清单、年终奖、"转岗后是天赐读数窗口"、判决书两格（原文标注"用户专属"）。</p>
+<p>问题不是写得好不好，是<strong>过期</strong>——半年后读这份规范的人会把"转岗专案"当成通用规则，或者发现一整层跟自己无关。</p>
+<p>修法：规范里只留通用骨架（桥 / 对岸 / 止损线三件，这三件任何过渡期都成立），把转岗专案与判决书两格挪进单独的判决书文件，按日期归档。规范里加一行指针。</p>
+<h2>三、skill 没同步 v1.1</h2>
+<p>v1.1 的修订说明写着"收入人情世故正名与需求报价点修订"，但 ih-ledger.skill 的四个 references（relationships / attraction / work-ledger / ih-display）里没有对应条目。</p>
+<p>skill 是 agent 触发的主要入口，不同步的后果是：人读规范知道第十层，agent 永远不知道。两份东西一漂，同一个问题会给出两套答案。</p>
+<p>修法：references 补一篇 etiquette.md（正名表 + 报价表），SKILL.md 的 description 加触发词（人情世故 / 面子 / 求助 / 示弱 / 报价）。另建议加一条同步规则：规范改版必须同时改 skill，否则 skill 里写死一个版本号并声明"滞后于规范 vN"。</p>
+<h2>四、月度两张表没有落点</h2>
+<p>第五层说周期点看两张表：想法死亡率、自账到账率。但包里没有：表头、记录位置、谁读、什么算异常。</p>
+<p>"流养点，点校流"这句话很准，点却是空的。空的点的命运是第一个月记得，第三个月忘记，第六个月变成一句正确但没人执行的话。</p>
+<p>修法：给一个最小表头，每月一行，先跑三个月再谈阈值。三个字段就够——本月提出的想法数 / 落地数 / 自账记的收益里真到账的笔数。不用做工具，先手写。</p>
+<h2>五、注水判据可以更可查</h2>
+<p>第一层说"不伪造结果"，第六层说"编排不注水：体积来自真实劳动的索引结构"。这两句其实可以接起来，而且接起来以后是可查的：</p>
+<blockquote>每个看起来很大的动作，必须能指回一条带时间戳的留痕条目。指不回去的，就是注水。</blockquote>
+<p>这样"编排"和"伪造"的边界不再靠"不注水"三个字自觉，而是靠第一层"状态变更有迹"来核。建议直接写进第六层，作为编排的自检句。</p>
+<h2>六、缺一张反例表</h2>
+<p>规范和对话记录里都是"应该怎样"，没有"这样做会坏"。审 devgate 时用的反模式表效果不错（每条标明结构错在哪），这套东西同样需要。至少五条：</p>
+<ul>
+<li>把自账当场账记 → 环境撤了才发现资产归零</li>
+<li>把幂零元当负资产清算 → 清掉之后发现它是某条关系的唯一接口</li>
+<li>示弱前没读数底座 → 可亲变成坐实</li>
+<li>只在一个定价点做交付 → 集中风险，一次坏读数全盘贬值</li>
+<li>拿单个噪声定价者的反馈当精准 → 把采样当估值</li>
+</ul>
+<h2>七、能直接用的三件</h2>
+<p>1. <strong>可携带性清单</strong>（截面可携带 / 关系可携带 / 赋值不可携带）——这是全篇最硬的一句，能直接用来判断"这份经验换个环境还值不值钱"。 2. <strong>难受 = 跨账比较</strong>（第三层记账第一条）——一句话解释了大部分内耗，而且给出了动作：先归账，再谈情绪。 3. <strong>需求只审报价点</strong>（第十层报价表）——把"想被认可"从道德问题改成定价问题，四条错误的报价点都换成了可执行的对岸。</p>
+<h2>八、与现有资产的接口</h2>
+<p>这套的末端判决是三态（做 / 缓 / 不做），和 devgate 的 EXECUTE / HOLD / VETO 同构；"判官先被测""无自我豁免"两句几乎是 agent_consistency_protocol_v0.3 §0 的原话。说明同一血脉。</p>
+<p>可以直接接的地方：把每月轧账的判决写进 .gate 证据链（一行一条：域 / 判决 / 理由 / 复核时点），这样"季度复利"就有账可查，不用另建系统。</p>
+<h2>九、建议的下一步（按性价比）</h2>
+<p>1. 把第五层四个反射做成实体（一张卡 + 一个命令或桌宠气泡）。规范自己说了日常形态是反射不是表格，那就得有个东西在眼前。 2. 月度两表给最小模板，先跑三个月。 3. skill 补 etiquette.md 并扩 description —— 这个最便宜，半小时。 4. 第十一层搬家、加反例表 —— 可以等下一版，不急。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>daily-001-2026-11-19-摩根士丹利电力缺口.原文</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/knowledge/">← 知识库</a></div>
+<h1>daily-001-2026-11-19-摩根士丹利电力缺口.原文</h1>
+<p class="meta">社交平台输入/douyin/合伙人Mike/2026-11/daily-001-2026-11-19-摩根士丹利电力缺口.原文.md　601 汉字</p>
+<p>--- 对象: 抖音 @合伙人Mike（sec_uid MS4wLjABAAAAenf9082BgxLneiIIjEahg3km9nsRPPeY1odY65oOWRo） 采集时间: 2026-11-26 08:2x 采集方式: 真浏览器（登录档案）打开主页，用 CDP Fetch 域截 aweme/post 响应体 → 21 条作品；最新一条下 play_addr 原片 → PyAV 解音频 → faster-whisper small 转写 覆盖: 作品列表 21 条（2026-10-02 → 2026-11-19）；最新一条只转出了开头 70 秒，<strong>70 秒之后音轨是数字静音（rms=0.0000）</strong>，不是我没转，是文件里没有。 ---</p>
+<h2>一、账号快照</h2>
+<ul>
+<li>昵称：合伙人Mike（页面标题「合伙人Mike的抖音」）</li>
+<li>21 条作品，2026-10-02 起，最近 8 天连发 9 条，均为券商研报解读（摩根士丹利／瑞银／高盛／美银），单条 8–23 分钟</li>
+<li>最新一条：<strong>2026-11-19 14:59｜746 秒（12:26）｜赞 12｜<code>7709897219993865535</code></strong></li>
+<li>标题：摩根士丹利：电力缺口扩大，AI芯片供需为何仍在收紧？</li>
+<li>简介：美国数据中心电力缺口预估扩大，半导体和存储供需却仍显紧张。建设延期会怎样改变增长节奏，海外部署与离网供电又…</li>
+</ul>
+<h2>二、最新一条的转录（只有前五句，后面是静音）</h2>
+<pre><code>
+[00:00] 电力更紧，AI芯片为何还缺，易卧观察。
+[00:03] 2026年11月19日，这次分享的是摩根斯丹利专栏的内容。
+[00:07] 本期内容聚焦数据中心、电力缺口与芯片供需的反差，聊聊离网供电。
+[00:12] 海外布局能缓解多少压力，以及2028年的增长还面临哪些约束。
+[00:16] 更多会议和研报可以在会员空间获得。
+[00:19] OK，话不多说，我们来听原声回放。
+</code></pre>
+<p>之后到 12:26 全段静音。</p>
+<h2>三、静音的取证</h2>
+<p>| 检查 | 结果 | | --- | --- | | <code>play_addr</code> 第一条（v26-web） | 200，13,408,795 字节 | | <code>play_addr</code> 第二条（v11-weba） | 200，13,408,795 字节，同一文件 | | <code>Content-MD5</code> | <code>AYdwBOHTvuqmX5zOojIJnA==</code>，与元数据 <code>file_hash</code> 前缀一致 → 服务端给的完整文件，不是断传 | | 容器时长 / 视频流 / 音频流 | 746.1 s / 11.5 s / 32.9 s | | 解出的音频样本 | 11,937,632 个 = 746.1 s（没少） | | 逐 10 秒 rms | 0–70 s 约 0.16–0.18；从 80 s 起 <strong>0.0000</strong> |</p>
+<p>结论：不是下载被截断，也不是解码漏段，是<strong>这条文件本身在 70 秒后没有声音</strong>。导语里自己说了「更多会议和研报可以在会员空间获得」「我们来听原声回放」——原声回放这一段在免费版里被静音，真内容在会员空间。</p>
+<h2>四、我打靶自己的流程</h2>
+<ul>
+<li>第一次转写只出 6 行，我差点当成"vad 把静音滤掉了"；真正的原因是文件里就没声。判据是 rms 逐段，而不是"转写结果短"。</li>
+<li><code>Fetch.getResponseBody</code> 在 <code>Network.responseReceived</code> 之后调容易拿不到（<code>No data found for resource with given identifier</code>），必须走 <code>Fetch.enable</code> + <code>requestStage: 'Response'</code> 才能稳拿体。</li>
+<li>抖音主页的作品列表在 <code>www-hj.douyin.com</code>，不在 <code>www.douyin.com</code>——正则只写 <code>www.douyin.com</code> 会漏。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

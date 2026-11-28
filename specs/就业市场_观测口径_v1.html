@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>就业市场观测口径 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>就业市场观测口径 v1</h1>
+<p class="meta">就业市场_观测口径_v1.md　502 汉字</p>
+<h1>就业市场观测口径 v1</h1>
+<p>写于 2026-11-27，BOSS 直聘接入过程中。目的：说清"求职环境"这件事到底用哪几个数看，免得拿一个失业率当结论。</p>
+<h2>一、总量层（官方，匿名可取）</h2>
+<p><code>akshare.macro_china_urban_unemployment()</code>，月度，字段为 日期/项目/值。四条序列：</p>
+<p>| 序列 | 2026-10 | 近 13 个月区间 | |---|---|---| | 全国城镇调查失业率 | 5.1% | 5.0–5.4，首末差 0.0 | | 本地户籍劳动力 | 5.2% | 5.0–5.4 | | 外来户籍劳动力 | 4.9% | 4.6–5.3 | | 25–59 岁劳动力 | 4.1%（2026-08） | 4.1–5.0 |</p>
+<p>读法：<strong>总量平</strong>（13 个月净变化 0），所以"求职难"的感受不可能来自总量，只能来自结构——岗位在哪些行业、要什么门槛、给多少钱。</p>
+<h2>二、结构层（BOSS 直聘，需过风控）</h2>
+<p>接口 <code>https://www.zhipin.com/wapi/zpgeek/search/joblist.json</code>，参数 <code>scene=1&amp;query=&amp;city=&amp;page=&amp;pageSize=</code>。</p>
+<p>风控两关： 1. <code>__zp_stoken__</code> cookie（由页面 JS 依 <code>seed</code> 算出，不能手工拼）； 2. IP 信誉（<code>code 35 您的IP地址存在异常行为</code>，与 UA/headless 无关）。</p>
+<p>所以取数流程是：<code>node tools/jobs/zhipin.mjs login</code>（有头窗口人工过一次验证 → 存 cookie）→ <code>report &lt;关键词&gt; &lt;城市&gt;</code>。</p>
+<p>要拿的五组字段：</p>
+<p>| 字段 | 为什么是关键 | |---|---| | <code>totalCount</code> | 岗位存量。同一个关键词两个月对比，等于"这个岗位在不在收紧" | | <code>salary</code> 的 P25/P50/P75 | 薪资分布，比平均值有用：中位不动而 P75 掉，说明高端岗位先没 | | <code>jobExperience</code> | 经验门槛分布。1–3 年占比上升＝企业不愿培养，只要即插即用 | | <code>jobDegree</code> | 学历门槛。本科以上占比上升＝同一岗位在提门槛 | | <code>brandIndustry</code> / <code>brandScaleName</code> | 谁在招。中小企业占比下降＝招聘由大厂撑，是收缩期的典型形状 |</p>
+<h2>三、判据</h2>
+<p>1. <strong>算"岗位数 ÷ 求职人数"没有分母</strong>（BOSS 不给求职者数），所以只能看<strong>同一关键词的月度变化</strong>，不看绝对值。 2. <strong>薪资中位数与失业率必须一起看</strong>：失业率平、薪资中位下行 = 有工作但在降薪；两个一起恶化才是真冷。 3. 单一平台有偏（BOSS 偏互联网与中小企业），所以结论只能写"BOSS 口"，不写"全市场"。 4. 每月的快照必须落盘（<code>knowledge/就业/&lt;YYYY-MM&gt;.json</code>），否则下个月没有对比基线——<strong>这个坑和社交平台一模一样</strong>。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

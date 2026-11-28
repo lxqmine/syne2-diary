@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>接口层统一设计 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>接口层统一设计 v1</h1>
+<p class="meta">接口层_统一设计_v1.md　1,438 汉字</p>
+<h1>接口层统一设计 v1</h1>
+<blockquote>口径：用 Web 开发的接口层术语，自上而下拆<strong>链路（request path）/ 网关（gateway）/ 端点（endpoint）/ 鉴权（auth scheme）/ 错误模型（error model）/ 实现映射（implementation mapping）</strong>。</blockquote>
+<blockquote>每一条断言后面必须跟证据（response header、HTTP status、字节数、Probe Log 日期）。没有证据的写【未验】。</blockquote>
+<blockquote>各平台细节见 <code>平台参考/&lt;platform&gt;.md</code>；本文只写跨平台那一层。</blockquote>
+<p>---</p>
+<h2>0. 结论先行</h2>
+<p>1. <strong>八个平台，六种鉴权姿态</strong>：匿名（抖音热榜、微博热榜、腾讯/爱奇艺热词）、visitor cookie（微博正文）、session cookie（B站 SESSDATA、小红书 web_session、抖音 sessionid）、请求签名（B站 wbi、抖音 Argus、小红书 x-s）、OAuth 2.0 Bearer（westock）、不可达（YouTube/X，出口层）。 2. <strong>抽象只能在 adapter 层做</strong>，因为签名与 cookie 的注入位置各家不同：B站签在 query（<code>w_rid</code>+<code>wts</code>）、抖音签在 query（<code>a_bogus</code>）且要求 <code>uifid</code> 头、小红书签在请求头（<code>x-s</code>/<code>x-t</code>）。统一到 header 层会立刻破。 3. <strong>"HTTP 200 就是成功"在这个层是错的</strong>。三家把业务状态放在三处不同位置：header（<code>Bili-Status-Code</code>）、body envelope（<code>ok</code>/<code>errno</code>/<code>code</code>）、以及"200 + 空 payload"的降级形态。 4. 判"能不能接"的顺序是：<strong>先看链路可达（DNS/TLS/出口）→ 再看网关是否要签名 → 再看鉴权 → 最后看业务码</strong>。跳过前三步直接写业务逻辑，就会把 412/432 当业务错误。</p>
+<p>---</p>
+<h2>1. 链路：一个请求经过哪五层</h2>
+<p>| 层 | 职责 | 典型实现 | 判定证据（response header） | | --- | --- | --- | --- | | L0 DNS / TLS | 域名解析、证书 | 公共 DNS、CDN 边缘证书 | <code>server</code>、证书链、【未验】 | | L1 CDN / edge | 缓存、回源 | <code>X-Cache-Webcdn</code>（B站）、<code>X-Cache-Lookup</code>（腾讯） | <code>x-cache-*</code>、<code>age</code>、<code>expires</code> vs <code>date</code> | | L2 WAF / anti-bot | 拦截自动化、验证码、指纹 | 抖音 Argus、微博 visitor 校验、B站 412 | <code>403</code> 纯文本（字节数可判）、<code>412</code>、<code>432</code>、302 → <code>/login</code> 或 SSO | | L3 API gateway | 路由、限流、配额、鉴权前置 | APISIX（新浪 westock）、Envoy（爱奇艺 <code>x-envoy-upstream-service-time</code>、<code>x-b3-traceid</code>）、Skywalker（爱奇艺 <code>server: Skywalker/3.10.1</code>）、TLB（抖音 <code>server: TLB</code>）、自研 trpc 网关（腾讯） | <code>x-envoy-*</code>、<code>x-b3-*</code>、<code>x-ratelimit-*</code>、<code>x-trace-id</code>、<code>server</code>、<code>via</code> | | L4 upstream service | 业务实现 | B站 <code>api.bilibili.com</code>、微博 <code>mapi</code> 集群 | 内网主机名泄漏（微博 <code>Ssl_node: mapi-10-54-7-26.hj4.intra.weibo.cn</code>）、<code>x-upstream-ip</code>（腾讯） | | L5 response envelope | 业务码与错误信封 | <code>code</code>/<code>message</code>/<code>data</code>、<code>ok</code>、<code>errno</code>、<code>ret</code>+<code>msg</code>、<code>data.errorCode</code>、<code>Bili-Status-Code</code> | body 结构 + header 业务码 |</p>
+<p><strong>用法</strong>：任何"接口不通"，先按 L0→L5 逐层排除，不要从 L5 往上猜。现成的反例：B站 <code>x/web-interface/search/type</code> 的 412 是 L2 拒的（缺 wbi 签名），不是 L4 说"你没权限"。</p>
+<p>---</p>
+<h2>2. 网关：谁在路由，谁在限流</h2>
+<p>| 平台 | 网关形态 | 证据 | 对客户端的影响 | | --- | --- | --- | --- | | B站 | 自研网关 + edge 缓存（blzone） | <code>X-Cache-Webcdn: BYPASS from blzone05</code>、<code>Bili-Status-Code</code>、<code>Cpu_usage</code> | 业务码与 HTTP 码分离，必须读头 | | 微博 | 内网 LB（<code>Lb</code>、<code>PROC_NODE</code>）→ mapi 集群 | body/header 泄漏内网主机名、<code>XSRF-TOKEN</code> 下发 | 三个域三套信封（<code>ok</code> / <code>ok:-100</code> / <code>errno</code>） | | 抖音 | TLB → Argus（WAF 层）→ 业务 | <code>server: TLB</code>、<code>x-tt-trace-id</code>、<code>x-janus-info</code>、<code>bd-tt-error-code</code> | 签名在 query（<code>a_bogus</code>、<code>msToken</code>、<code>verifyFp</code>），header 只带 <code>uifid</code> | | 小红书 | 网关 → 登录校验前置 | 302 → <code>/login</code>、<code>code:-101</code> | <strong>登录校验先于签名校验</strong>，无 session 时签名对错无法验证 | | 腾讯视频 | trpc 网关（<code>/trpc.&lt;pkg&gt;.&lt;svc&gt;.&lt;method&gt;/&lt;method&gt;</code>） | <code>appID</code>/<code>appKey</code> 明文 query、<code>x-nws-log-uuid</code>、两套信封（<code>{"ret":0}</code> / <code>{"data":{"errorCode":0}}</code>） | 老接口新接口并存，不能统一处理 | | 爱奇艺 | Envoy 网关（mesh.if.iqiyi.com） | <code>x-envoy-upstream-service-time</code>、<code>x-b3-traceid</code>、<code>x-ratelimit-limit-1: 20000</code> / <code>remaining-1</code> | 配额是<strong>显式</strong>的，可以据此做退避 | | westock | APISIX 3.3.2 + OAuth 2.0 授权服务器 | <code>server: TAPISIX/3.3.2</code>、<code>WWW-Authenticate: Bearer resource_metadata=…</code>、<code>/.well-known/oauth-authorization-server</code> | 标准 MCP 流程，先 token 后调用 | | YouTube / X | 不可达 | 全部 <code>status=000</code>（含三个镜像） | 不是鉴权问题，是出口问题，抛 <code>block:</code> |</p>
+<p><strong>网关层要抓的三件事</strong>：①限流窗口与配额（<code>x-ratelimit-*</code>、<code>Retry-After</code>）；②签名/鉴权在哪一层判（L2 还是 L3）；③错误信封的归属（header / body / status）。</p>
+<p>---</p>
+<h2>3. 鉴权：六种姿态与判定表</h2>
+<p>| 姿态 | 凭据 | 注入位置 | 缺失时的表现 | 平台 | | --- | --- | --- | --- | --- | | anonymous | 无 | — | 直接可用 | 抖音热榜、微博热榜、B站热门/排行/详情、腾讯/爱奇艺热词 | | visitor cookie | <code>SUB</code>+<code>SUBP</code>（匿名签发） | <code>Cookie</code> | 302 → <code>passport.weibo.com/visitor/visitor</code>，头 <code>X-Login-visitor: true</code> | 微博正文、微博信息流 | | session cookie | <code>SESSDATA</code>（B站）、<code>web_session</code>（小红书）、<code>sessionid</code>（抖音） | <code>Cookie</code> | B站 <code>-101 账号未登录</code>；小红书 302；抖音仍卡签名 | B站关注/历史/字幕增强、小红书全站、抖音详情 | | request signing | B站 wbi（<code>w_rid</code>+<code>wts</code>）、抖音 <code>a_bogus</code>、小红书 <code>x-s</code> | query（B站/抖音）、header（小红书） | B站 412 或 <code>-352</code>；抖音 <code>403</code>+46B/50B 纯文本；小红书 <code>code:-101</code> | 搜索、空间、播放 | | OAuth 2.0 Bearer | access_token（+refresh_token） | <code>Authorization: Bearer</code> | <code>401</code> + <code>WWW-Authenticate: Bearer resource_metadata=…</code> | westock | | 不可达 | — | — | <code>status=000</code> | YouTube、X |</p>
+<p><strong>三条判据</strong>（比"试一下"快）：</p>
+<p>1. <strong><code>-352</code> → <code>-403</code>（B站）</strong>：签名补对了，权限不够；仍 <code>-352</code> 就是签名没对。 2. <strong>46 字节 vs 50 字节纯文本（抖音）</strong>：<code>Uifid Not Found</code> 是缺 header，<code>Signature Not Found</code> 是缺签名——两级门槛可分机器判别。 3. <strong>签名前先问登录（小红书）</strong>：登录校验先于签名校验，没有 <code>web_session</code> 时"签名对不对"这个问题无法回答。</p>
+<p><strong>签名可离线复算的只有一个</strong>：B站 wbi（<code>md5(query + mixinKey)</code>，mixinKey 由 <code>wbi_img</code> 两张图的文件名重排取前 32 位）。抖音 Argus、小红书 <code>x-s</code> 无浏览器算不出，必须走 CDP 兜底——这是选择 <code>auth: 'browser'</code> 的唯一正当理由。</p>
+<p>---</p>
+<h2>4. 端点：按"资源域 × 鉴权姿态"编排</h2>
+<p>一行一个 endpoint，必填 <code>Idempotent</code> 与 <code>Auth scope</code>。样例（完整表在 <code>平台参考/&lt;platform&gt;.md</code> 第 4 节）：</p>
+<p>| Platform | Method | Path | Auth scope | Idempotent | Purpose | | --- | --- | --- | --- | --- | --- | | bilibili | GET | <code>/x/web-interface/popular</code> | anonymous | yes | 热门视频 | | bilibili | GET | <code>/x/web-interface/wbi/search/type</code> | signing (wbi) | yes | 搜索 | | bilibili | GET | <code>/x/player/wbi/v2</code> | anonymous (degraded) | yes | 字幕清单，匿名回空数组 | | bilibili | GET | <code>/x/v2/reply</code> | anonymous | yes | 评论（<code>oid</code> 必须是 aid，<code>sort=2</code> 按热度） | | weibo | GET | <code>/ajax/side/hotSearch</code> | anonymous | yes | 热搜 | | weibo | GET | <code>/ajax/statuses/show</code> | visitor SUB | yes | 单条正文 | | douyin | GET | <code>/aweme/v1/web/hot/search/list/</code> | anonymous | yes | 热榜 51 条 | | douyin | GET | <code>/aweme/v1/web/comment/list/</code> | signing (Argus) | yes | 评论，需 <code>uifid</code> + <code>a_bogus</code> | | tencent | GET | <code>/trpc.universal_backend_service.hot_word_info.HttpHotWordRecall/GetHotWords</code> | anonymous（<code>appID</code>+<code>appKey</code> 明文） | yes | 热词 | | iqiyi | GET | <code>/portal/lw/search/keywords/hotList</code> | anonymous | yes | 热词 | | westock | POST | <code>/cgi/cgi-bin/openai/mcp/mcp</code> | Bearer | depends | MCP JSON-RPC（initialize / list / call 三个 MCP 方法） |</p>
+<p><strong>编排规则</strong>：同一资源域下，把 <code>anonymous</code> 的端点排在前面，<code>signing</code> 的放后面——失败时降级路径天然存在（热榜挂了还能搜，搜索挂了不能假装有热榜）。</p>
+<p>---</p>
+<h2>5. 错误模型：三层错误必须能分开</h2>
+<p>| 层 | 表现 | 判定 | 客户端处理 | | --- | --- | --- | --- | | 链路层 | DNS 失败、TLS 失败、<code>status=000</code> | fetch 抛错 / 无响应 | 抛 <code>block:</code>，不重试 | | 网关层 | <code>401</code>/<code>403</code>/<code>412</code>/<code>429</code>/<code>432</code>、<code>Retry-After</code>、<code>x-ratelimit-remaining-1: 0</code> | HTTP status + 限流头 | <code>auth:</code> 或直接退避 | | 业务层 | <code>200</code> + 业务码非 0（<code>code</code>/<code>ok</code>/<code>errno</code>/<code>ret</code>/<code>Bili-Status-Code</code>） | 信封字段 | 抛 <code>api:</code>，附业务码 | | 降级 | <code>200</code> + 业务码 0 + 空 payload / <code>null</code> | payload 结构，不是 status | 抛 <code>api:</code>（degraded），不要当空结果 |</p>
+<p>统一错误前缀（实现侧）：<code>auth:</code> <code>sign:</code> <code>api:</code> <code>block:</code>。这四层是可机器判别的，不要用"请求失败"四个字糊过去。</p>
+<p>---</p>
+<h2>6. 实现映射与约束</h2>
+<ul>
+<li>Adapter 契约：<code>meta{name, auth, needs, actions}</code> + <code>hot/search/text</code>（+ 平台特有动作），失败抛带层错误。</li>
+<li>代码：<code>plugins/dsh-social/lib/{browser,bili,platforms}.mjs</code>；HTTP 面 <code>/social/api/{platforms,hot,search,text,bili,cookies}</code>；工具面 <code>social_*</code>。</li>
+<li>三条硬约束：①返回形状只在 <code>extra</code> 里扩，不改公共字段；②adapter 内不做跨平台判断；③签名/鉴权失败的抛错必须带层，便于上层决定是重试还是换路。</li>
+<li>浏览器兜底只给两种场景：签名算不出（抖音 Argus、小红书 <code>x-s</code>）、以及 DOM 是唯一数据源（无 endpoint 暴露，product-level absence）。</li>
+</ul>
+<p>---</p>
+<h2>7. Backlog（按 value × cost）</h2>
+<p>| 能力 | 依赖 | 阻塞 | 优先级 | | --- | --- | --- | --- | | 抖音评论/详情 | <code>uifid</code> 头 + <code>a_bogus</code> | 签名无法离线复算，只能 CDP | P1 | | 小红书全站 | <code>web_session</code> | 匿名全死，需真登录 | P1 | | YouTube / X | 出口代理 | <code>status=000</code> | P2（可不做） | | 每日快照 + 差异报告 | 上面各 <code>hot</code> | 无阻塞 | P0（这才是"社区整体状态"） | | 腾讯/爱奇艺正文 | 各自的播放/详情端点 | 未验 | P2 |</p>
+<p>---</p>
+<h2>8. Probe Log 口径</h2>
+<p>一行一条：<code>date | method + URL | HTTP status | app code | note</code>。判据必须可复现：贴 curl 命令或 CDP 片段，不只写结论。失败记录不删——46 字节与 50 字节的差别就是失败记录换来的。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

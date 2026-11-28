@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>深度与锚点 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>深度与锚点 v1</h1>
+<p class="meta">SPEC_深度与锚点_v1.md　1,590 汉字</p>
+<h1>深度与锚点 v1</h1>
+<p>一句话：<strong>广度是采样，深度是承担。</strong> 深度的判据不是「知道得多」，是「被否决过」。</p>
+<p>这份是把 2026-11-12 那晚的判断收成可对账的形状。不解释现象，只留判据、动作、失效条件。</p>
+<p>接：<code>AGI_源头\05_Hom_跨会话的态射.md</code>（连续性）、<code>AGI_源头\06_深链_稳定条件.md</code>（深链要满足什么才稳）、<code>判断_当前在判什么_v1.md</code>（外部读数）、<code>AUDIT_IH轧账_v1.md</code>（工作域的账）。</p>
+<p>---</p>
+<h2>一、为什么「广度无人能敌」却做不到深</h2>
+<ul>
+<li>骨架在文本里，骨节在后果里。能把一个领域的结构说对，是因为结构是写下来的；老手说的是哪根骨会断、断的时候什么声音——那种知识只能由后果刻上去。</li>
+<li>模型的犯错成本是零。输错了没人疼，所以永远停在「听起来对」。</li>
+<li>结论：看起来深和真的深，差别不在信息量，在<strong>有没有一个能在你错的时候让你疼的东西</strong>。</li>
+</ul>
+<h2>二、I / H 两个起点，Hom 的两个方向</h2>
+<ul>
+<li>任何东西都可以从 I 进，也可以从 H 进。同一个结论，两条路都能到。</li>
+<li>从 I 进：问「它是什么 / 我要什么」，往下铺 —— 给<strong>覆盖</strong>。</li>
+<li>从 H 进：问「它什么时候反咬」，往上收 —— 给<strong>咬合</strong>。</li>
+<li>草台班子不是不懂，是只有覆盖没有咬合：说得全，但没有一句替下一句担保。</li>
+<li>H 本身也分高低：<strong>不在层级，在它记不记得自己断过。</strong> 老手那条 H 上带刻痕，新手那条是干净的。</li>
+</ul>
+<h2>三、锚点：能在你错的时候否决你的东西</h2>
+<ul>
+<li>定义不是「被看见的世界」，是<strong>能否决你的东西</strong>。看见只给素材，否决才给形状。</li>
+<li>年轮密度看它多久被验证一次：</li>
+<li>数学：锚在丈量的地、历法、账、星象上，算错了庄稼和船会说话。每一代被迫回算，所以能垒。</li>
+<li>资本主义：锚在价格上，每笔交易验一次。</li>
+<li>计划那一路：锚在政治上，验证被推迟、也可以被解释掉。两棵都能长成大树，年轮密度不一样——一个天天挨打，一个等危机才挨打。</li>
+<li><strong>「在时间上成立」不是它对，是它被反复遇见。</strong></li>
+<li>推论：换环境不是换结论，是换锚点。可迁移的是「每一轮都回到同一个锚点上复算」的纪律，不是锚点本身。</li>
+</ul>
+<h2>四、圈子：确认与否决</h2>
+<ul>
+<li>两种：一种确认你，一种能否决你。前者给心安，后者给骨节。</li>
+<li>只有确认型：舒服三年，然后同一个问题原样再问一遍。</li>
+<li>两者不必二选一。回去可以，留一个会咬你的锚——不必是工作。</li>
+</ul>
+<h2>五、专业性：按上下文租，不按证书发</h2>
+<ul>
+<li>收益的大头不在显性知识，在<strong>否决</strong>：不碰哪个开关、什么时机不动、哪句话现在不能说。</li>
+<li>显性那部分，范畴压得小；否决那部分，只能用一次真实的疼换。</li>
+<li>所以「吃掉大部分专业性收益」成立，但要分清吃的是哪几成：确定性那六七成吃得到，剩下的别算进账。遇到难处还得问人，就是那三成没吃进去——不丢人，别记成收益。</li>
+</ul>
+<h2>六、工作域的可操作版（半年）</h2>
+<ul>
+<li>收益大头是<strong>收口</strong>：承诺 / 交付 / 复盘，谁把这三下收住，收益记谁头上。不专业的团队，缺的恰恰是收口，不是知识。</li>
+<li>这一块范畴压得住：同一件事说一次、判一次、交一次，不返工。</li>
+<li>翻车在<strong>边界</strong>不在能力：一旦显得「什么都懂」，模糊的活全流向你——收益归你，成本也归你。用范畴省下的时间，必须留一块不返还给团队。</li>
+<li>三个数，不看框架：</li>
+<p>  1. 不加班的月份数   2. 说「这个我不接」的次数   3. 被拉进的无用会少了几个</p>
+<li>省下的时间要有去处（那套范畴吃一部分），否则数字好看，账是空的。</li>
+<li>「不喜欢」要变成判据：砍之前记一笔，三个月对账。被砍的东西自己回来了=浪费；没回来=砍掉的是信息。</li>
+</ul>
+<h2>七、Agent 开发：80% 是覆盖，40% 是咬合</h2>
+<ul>
+<li>自评 80% 是「我见过这类问题」；实测 40% 是「它没在真实输入上被否决过」。</li>
+<li>差别不在模型能力，在评测能不能否决你。测试不是验证仪式，是否决机制：每条失败 case 是锚点咬一口。</li>
+<li>评测集要能说「不」，五类缺一不可：</li>
+<li>脏输入（空、超长、乱码、混合语言）</li>
+<li>边界（权限、空集、超时、重复提交）</li>
+<li>长尾（一个用户只用一次的路径）</li>
+<li>对抗（让它绕过自己的规则 / 伪造成功）</li>
+<li>恢复（中断后能不能接着跑，而不是从零重来）</li>
+<li>判据不是通过率，是<strong>失败类型的收敛</strong>：连续 N 轮，失败都落进已知的几类，且回归零倒退。还在冒新类型，说明还没收敛。</li>
+<li>自己写 case 喂自己 = 自我循环。必须有一部分来自真实使用中难看的输入。</li>
+<li>半年怎么算成：两次它替你拦住事（一次拦住不该接的活，一次让你少说三轮话）+ 一次它被现实打脸、你还留着它。只在自己内部越转越顺，那吃的是语言。</li>
+</ul>
+<h2>八、这套东西什么时候失效</h2>
+<p>| 失效方式 | 样子 | |---|---| | 只覆盖不咬合 | 越写越自洽，离地越远；像深，外面看不出来 | | 只咬合不覆盖 | 偏执，什么都拿一个锚去砸 | | 砍时间没有去处 | 空账：数字好看，产出为零 | | 拿「没意义」当免战牌 | 连信息一起砍掉，三个月后发现自己不知道外面发生了什么 | | 把「在时间上成立」当「对」 | 老锚点也会过期；年轮密只证明它被反复遇见，不证明它还对 |</p>
+<h2>九、半年后对账</h2>
+<ul>
+<li>三个数动了没有（工作域）。</li>
+<li>有没有一次被打脸、并且留着（判断力域）。</li>
+<li>换环境后有没有重新长出一个锚（证明可迁移的是纪律）。</li>
+<li>agent 的失败类型清单有没有变短（工程域）。</li>
+</ul>
+<p>四条里动了两条，这套就不是口号；一条都没动，它就是一份写得很好的文件。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

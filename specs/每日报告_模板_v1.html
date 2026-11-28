@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>每日机理报告 · 模板 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>每日机理报告 · 模板 v1</h1>
+<p class="meta">每日报告_模板_v1.md　857 汉字</p>
+<h1>每日机理报告 · 模板 v1</h1>
+<p>参照样本：<code>agent-specs/分析_2026-11-27_机理与硬约束.md</code>（9,981 汉字）。 那份比"三个世界"好在：<strong>每节都挂数、每条都落到"能不能做到"、缺口和自错都摆出来。</strong> 本模板把它的骨架固定下来，每天换数据不换结构。</p>
+<h2>零、硬规矩</h2>
+<p>1. <strong>所有数字当场取</strong>，不许引用昨天的报告、不许凭记忆。取不到的写进缺口表，不估、不编。 2. <strong>每个小节至少一个数</strong>。没有数的小节删掉。 3. <strong>每条判断必须带失效条件</strong>（"如果……则本判断作废"）。写不出的，降级成"观察"，不算判断。 4. <strong>禁止</strong>："值得注意的是""综合来看""众所周知""或将成为""有望"。 5. <strong>不写宏观抒情</strong>。凡出现"时代""浪潮""叙事"这类词，删。 6. 汉字数下限 <strong>6,000</strong>，上限 12,000。超过 12,000 说明在灌水。 7. 结论只有两种：<strong>能算的清</strong>（给数）／<strong>算不清</strong>（进缺口表）。中间态不许有。</p>
+<h2>一、一句话结论（≤80 字）</h2>
+<p>今天这盘是"什么类型"＋"关键分界在哪"。例：</p>
+<blockquote>政策脉冲而非趋势反转；分界 4242（MA60），站上才改口。</blockquote>
+<h2>二、今日读数表</h2>
+<p>一张表，<strong>不少于 20 行</strong>，四列：指标｜读数｜分位/对比｜来源。</p>
+<p>必须覆盖：</p>
+<ul>
+<li>指数：沪深300、上证、创业板、科创50（涨跌幅＋成交额＋换手）</li>
+<li>估值：PE、E/P、股息率（有就写，没有标缺口）</li>
+<li>货币：M2/M1/M0 同比与环比、剪刀差</li>
+<li>利率：10Y、2Y、期限利差、中美利差</li>
+<li>汇率：中间价、离岸</li>
+<li>资金：主力/超大单/大单/中单/散户净额，5/10/20 日累计</li>
+<li>情绪：涨停数、涨跌家数、换手分位</li>
+<li>政策：当日关键表述（原文引号，不改写）</li>
+</ul>
+<h2>三、机理链（三条，每条给箭头）</h2>
+<p>格式：<code>A → B → C → 结果</code>，每条链末尾给"这条链的瓶颈在哪一环"。</p>
+<ul>
+<li><strong>链一（政策→资产）</strong>：文件 → 谁执行 → 用什么钱 → 买什么 → 谁接盘</li>
+<li><strong>链二（货币→信用）</strong>：央行 → 银行 → 企业/居民 → 需求</li>
+<li><strong>链三（情绪→筹码）</strong>：成交结构 → 谁在买 → 能撑几天</li>
+</ul>
+<p>每条链必须写出<strong>当前卡在第几环</strong>，并给一个可观测指标。</p>
+<h2>四、硬约束（四道，每道给上限）</h2>
+<p>1. <strong>货币总量约束</strong>：M2 增速 / M1 增速 → 能放多少 2. <strong>资金价格约束</strong>：利差 / 汇率 → 能降多少 3. <strong>筹码约束</strong>：流通市值 / 换手 / 存量资金 → 能推多高 4. <strong>制度约束</strong>：涨跌停 / T+1 / 维持担保比例 / 考核周期 → 能多快</p>
+<p>每道写：<strong>上限是多少、现在用了多少、还剩多少。</strong></p>
+<h2>五、可行性（三问，每问给算式）</h2>
+<ul>
+<li>要托住某个点位，每天需要多少钱？（承接比例 × 成交额）</li>
+<li>要推动某个风格，需要多少增量？（市值 × 涨幅 ÷ 换手）</li>
+<li>要改变预期，需要多少时间？（传导系数 × 时滞）</li>
+</ul>
+<p>三问都必须给<strong>算式和结果</strong>，不许只给形容词。</p>
+<h2>六、形状（今天该怎么做）</h2>
+<p>| 项 | 值 | 依据 | |---|---|---| | 仓位上限 | x% | 最大可承受回撤 ÷ 样本回撤中位 | | 持有期限 | x–y 日 | 样本胜率衰减点 | | 止损位 | 数值 | 前低／缺口／成本线 | | 加仓位 | 数值 | 均线／前高 |</p>
+<h2>七、缺口表（≥5 行）</h2>
+<p>| 缺口 | 为什么重要 | 怎么补 | |---|---|---|</p>
+<h2>八、我可能错在哪（≥5 条）</h2>
+<p>每条写：错在哪类（数据／模型／视角）＋如果成立会推翻哪条结论。</p>
+<h2>九、明日要核的数（≤5 条）</h2>
+<p>可执行到一条命令。</p>
+<h2>十、复算命令</h2>
+<pre><code>
+# 至少三条，能直接跑
+</code></pre>
+<h2>十一、格式自检</h2>
+<pre><code>
+node tools/report/verify.mjs YYYY-MM-DD
+</code></pre>
+<p>过了才算交付。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

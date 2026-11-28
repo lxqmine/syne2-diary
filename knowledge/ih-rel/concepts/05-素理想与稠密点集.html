@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>素理想与稠密点集</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/knowledge/">← 知识库</a></div>
+<h1>素理想与稠密点集</h1>
+<p class="meta">ih-rel/concepts/05-素理想与稠密点集.md　483 汉字</p>
+<h1>素理想与稠密点集</h1>
+<blockquote>你选的不是一个点，是点集的稠密性。</blockquote>
+<blockquote>状态：已核</blockquote>
+<blockquote>出处：IH轧账对话记录_2026-11-05.md:23-30</blockquote>
+<h2>机制</h2>
+<p>"在谁面前有魅力""在哪个环境被认可"这类问题，三种答法：</p>
+<p>| 选法 | 代数对应 | 人话 | 问题 | |---|---|---|---| | 挑一个最强的人认可我 | 极大理想 / 闭点 | 拿某个人的投影当本体 | 那是残域，不是环 | | 谁都不在乎，我看全局 | 泛点 | 看得全但住不进去 | 不可执行 | | 在很多点上分别被读 | 稠密点集 | 函数由稠密集上的值唯一决定 | 唯一不造假的选法 |</p>
+<p>关键定理：<strong>f 由所有素理想处的取值决定，模掉幂零元。</strong> 意思是——只要采样点足够稠密，你就能被完整读出来，只漏掉那些本来就不可见的部分。</p>
+<p>魅力不可速成的几何解释：泛点处的茎是邻域截面的余极限。<strong>余极限只能叠，不能造。</strong></p>
+<h2>判据</h2>
+<p>能规划的只有两件，其余都是结果：</p>
+<p>1. <strong>探测密度</strong>：我在多少个不同的点上被读到过。 2. <strong>截面厚度</strong>：每个点上我能拿出多少真东西。</p>
+<p>"在哪个人面前有魅力"不可规划——那是一次采样的结果，不是设计目标。</p>
+<h2>反例</h2>
+<ul>
+<li><strong>单点押注</strong>：把全部希望放在一个上级身上。他是闭点，读不出环厚，只读得出投影。</li>
+<li><strong>无差别暴露</strong>：以为点多就等于稠密。点在噪声里，稠密性不成立，反而增加被误读的表面积。</li>
+<li><strong>跳过探测直接要结果</strong>：没有截面就想被认可，这是祈求性暴露。</li>
+</ul>
+<h2>链接</h2>
+<ul>
+<li>相关概念：<a href="09-显示层三档.md">显示层三档</a>、<a href="10-定价不在场.md">定价不在场</a>、<a href="06-复合率.md">复合率</a></li>
+<li>外部样本：<code>ebooks/themes/投资-趋势与位置.md</code>（多个周期的确认才叫趋势，单根 K 线不是）</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

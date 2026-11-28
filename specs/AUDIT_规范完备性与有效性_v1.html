@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>规范审计 v1：完备性与有效性</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>规范审计 v1：完备性与有效性</h1>
+<p class="meta">AUDIT_规范完备性与有效性_v1.md　2,228 汉字</p>
+<h1>规范审计 v1：完备性与有效性</h1>
+<p>审计时间 2026-11-05 ｜ 审计者 小鱼（agent）｜ 被审对象 三份规范 + devgate 0.1.x 实现</p>
+<blockquote>按 P0.3 §8，agent 无权提出协议变更。本文件是<strong>审计记录</strong>，不是修订提案；标「规范层」的缺口一律留给人工裁决。</blockquote>
+<blockquote>本次审计任务 Tmw2rc0e5 已登记：L2、允许改 agent-specs/ 与 plugins/devgate/test/。</blockquote>
+<p>---</p>
+<h2>一、审法</h2>
+<p>1. 把三份文本逐条抽成「约束」：六项不变量 34 条、§4–§7 流程条款 30 条、v1.0 独有 9 条、DE 独有 7 条。 2. 每条标注落点，三选一：<strong>工具规则</strong>（devgate 能自动抓）/ <strong>人工流程</strong>（只能人看）/ <strong>无落点</strong>（写了但没人执行）。 3. 对工具规则做对抗实测：<code>node plugins/devgate/test/adversarial.mjs</code>，25 个样本，正例 21 反例 4。 4. 数落点，比漏检率，判「完备」与「有效」两件事。</p>
+<p>---</p>
+<h2>二、结论先说</h2>
+<p>| 维度 | 判定 | |---|---| | 框架完备性 | <strong>高</strong>。三份文件覆盖目标/上下文/结构/实现/验证/演化六面，v1.0 补测试与发布，DE 补造环纪律与测试体系，没有明显的大块空白。 | | 条款有效性 | <strong>中低</strong>。34 条不变量里静态可取证 ≤ 6 条（约 18%），I-3 结构一致性 0 覆盖，I-2/I-6 基本靠自觉。 | | 检查器有效 | <strong>弱</strong>。对抗样本 25 个，抓不到 16 个，误报 0。它现在只会抓教科书写法。 | | 最致命的结构问题 | <strong>取证权在被审者手里</strong>（见 §4.1），以及<strong>没有强制入口</strong>（见 §4.2）。 |</p>
+<p>一句话：规范是「判决标准完备、取证手段贫乏、且取证靠自首」。</p>
+<p>---</p>
+<h2>三、逐条落点表</h2>
+<h3>I-1 目标一致性（5 条）</h3>
+<p>| 要求 | 落点 | |---|---| | 区分明确需求/合理推断/待确认 | 人工（declare 只有 goal，不区分三类） | | 执行前明确目标与完成条件 | <strong>工具</strong> gate_declare | | 新问题不自动成为当前任务 | 人工；allowPaths 只能事后间接拦 | | 需求变化记录影响 | <strong>无落点</strong>（declare 直接覆盖，无变更记录） | | 冲突先解决再实现 | 人工 |</p>
+<h3>I-2 上下文一致性（5 条）</h3>
+<p>| 要求 | 落点 | |---|---| | 区分持久事实与临时推理 | 无落点（靠 WORK_STATE / 记忆文件，无检查） | | 重要决策外部化 | 部分（.gate/evidence.jsonl 记声明，不记决策理由） | | 恢复不只看上轮总结 | 人工（§5 六步流程） | | 必要时重查代码/Git/测试 | 人工 | | 记录与实际不符先核对 | 人工 |</p>
+<h3>I-3 结构一致性（5 条）</h3>
+<p>| 要求 | 落点 | |---|---| | 模块职责明确 | 人工 | | 依赖方向与接口约定 | 人工 | | 业务规则单一归属 | <strong>无落点</strong>（重复实现没人查） | | 不许绕过接口 | 人工 | | 跨边界先提架构变更 | 人工（L3 升级靠自觉） |</p>
+<p><strong>I-3 是最大空白：0 条自动化。</strong> 而它恰好是「代码能跑但越来越难改」的唯一防线。</p>
+<h3>I-4 实现一致性（6 条）</h3>
+<p>| 要求 | 落点 | |---|---| | 实现前识别相关代码 | 人工 | | 不造平行实现 | 无落点 | | 不为过测试削弱语义/改验收 | 弱：G01（比 mtime）、M02（字符串匹配） | | 特殊处理要有业务依据 | 部分：E02（要求写注释） | | 修改控制在合理范围 | 弱：P01（只认自报的 file 证据，见 §4.1） | | 实现与设计冲突要判断 | 人工 |</p>
+<h3>I-5 验证一致性（7 条）</h3>
+<p>| 要求 | 落点 | |---|---| | 验收条件对应验证方式 | 弱：VAGUE_RE 只判「太空」，不判「不可证伪」 | | 修改后执行匹配检查 | 弱：M02 | | 修缺陷先建复现测试 | 无落点 | | 测试通过 ≠ 全满足 | 间接：T01/T04 | | 未执行的测试不得报通过 | 弱：M02（谁说通过就信谁） | | 无法验证须标记 | <strong>无落点</strong>（evidence 没有 unverified 类型） | | I-5.7 改测试双验证 | <strong>无结构化落点</strong>（G01 只比时间戳） |</p>
+<h3>I-6 演化一致性（6 条）</h3>
+<p>| 要求 | 落点 | |---|---| | 区分实现修改/需求变更/架构变更 | 部分：level 字段 | | 缺陷修复取最小 | 人工 | | 范围外改进单独记录 | 无落点 | | 改公共接口重估影响 | 人工（L3 靠自觉） | | 保留变更原因与迁移信息 | 无落点 | | 协议升级有依据 | 人工（§8） |</p>
+<h3>流程条款</h3>
+<p>| 条款 | 落点 | |---|---| | §4.1 过程预期 | <strong>无字段</strong>——declare 没有 processExpectation，v0.3 强制项落空 | | §4.5 探索只读记账与隔离 | 半：M03 数次数，不查产出隔离 | | §4.6 验证六问 | 无清单，交付时不强制回答 | | §4.7 交付七项（含预期核对） | 半：formatVerify 覆盖声明与证据，缺「预期中/未中」 | | §5 WORK_STATE 维护 | <strong>无落点</strong>（连存在性都不查） | | §6 缺陷修复 vs 架构变更分流 | 无判定，全人工 | | §7 八条升级条件 | 落 3 条（目标歧义/越界/空转），其余 5 条无触发 | | §10 九项指标 | <strong>无计算</strong>（数据都在 evidence.jsonl 里，没算） |</p>
+<h3>v1.0 独有（v0.3 未吸收的部分）</h3>
+<p>| 条款 | 落点 | |---|---| | 6.1 测试分层（金字塔） | 无 | | 6.2 变异测试 | 无（adversarial.mjs 是它的弱化版） | | 6.3 非确定性验证（性质集） | 无 | | 6.4 恢复演练 | 无 | | 6.5 灰度发布 | 无 | | 6.6 评判工具校准 | 无——<strong>devgate 自己就是「评判工具」，从没被校准过</strong> | | §7 并行方案管理 | 无 | | §8 文档-实现一致性 | 弱：D01 只查死引用，不查陈述过时 | | §9 告警阈值不得抬高 | 无（这条正在被违反：WARN 太多会导致整体被忽略） |</p>
+<h3>DE 独有</h3>
+<p>| 条款 | 落点 | |---|---| | 造环纪律（每环有动作出口、贵不过它防的损失） | 未对本工具自检 | | 串层防护六条 | 无（L1–L5 只是一行标注，不改变检查深度） | | 测试最小环五环 | 无 | | R7 四器官（延迟预算/批处理/并行判决/已有登记） | 无 | | R8 五道防线（防表演/麻木/冲动/根腐烂/悬崖） | 无 |</p>
+<p>---</p>
+<h2>四、有效性的两个真问题</h2>
+<h3>4.1 取证权在被审者手里</h3>
+<p><code>judgeEvidence</code> 的越界判定（store.js:185-193）只看 <strong>evidence 里自报 <code>type:"file"</code> 的 ref 前缀</strong>。 不填 file 证据 → 一条都不越界。同理 M02 判「声称测试通过」只看 claim 里有没有「测试/通过」字样与 evidence 里有没有 test 类型。</p>
+<p>这不是规则写错，是<strong>结构问题</strong>：被审者同时是取证者。 规范 §11.1 说「校验器质量封顶一切」，实际更糟一层——<strong>校验器的输入由被审者提供，质量封顶之外还加了一道自愿性</strong>。</p>
+<p>修法（可自动）：declare 时记工作区快照（路径+size+mtime），verify 时 diff 出<strong>真实改动集合</strong>，与 allowPaths 比对。不依赖自报。</p>
+<h3>4.2 没有强制入口</h3>
+<p>M01–M04、P01 全部依赖 <code>task</code> 存在。不 declare 直接干活 → 记账层整体失效，<code>gate_verify</code> 仍然返回 PASS（task 为 null 时只走「有无证据」分支）。 <code>gate_check</code> 也不看有没有 task。</p>
+<p>也就是说：<strong>只要不登记，整套约束自动失效，且没有任何提示。</strong> 这与 §0「无自我豁免条款」直接冲突——工具给了 agent 一个静默豁免通道。</p>
+<p>修法：<code>gate_verify</code> 在无 open task 时 VETO；<code>gate_check</code> 在无 task 时 WARN「这次检查没有任务边界」。</p>
+<h3>4.3 对抗实测数据</h3>
+<p><code>plugins/devgate/test/adversarial.mjs</code>，25 样本：</p>
+<pre><code>
+抓不到 16 / 21，误报 0
+漏检：
+  T04  A2 expect(v).toBe(v)      A3 assertTrue(true)      A4 length&gt;= -1
+       A5 assertThat(true).isTrue()                        A9 expect(true).toBeTruthy()
+  T01  A10 测试体只调 helper（断言在 helper 里）
+  E01  B2 catch { return null }  B3 .catch(() =&gt; {})       B4 except Exception as e: pass（同行）
+       B5 except: continue        B7 catch { console.error(e) }（只打日志）
+  H01  C2 const key = 'AKIA…'    C3 const token = 'ghp_…'  C4 password = 'hunter2hunter2'
+  D01  D1 docs/agent-protocol.md（首段不存在→跳过）  D2 子目录扫描时首段判错
+</code></pre>
+<p>两条结论：</p>
+<ul>
+<li><strong>正则是「教科书识别器」</strong>：只要写法稍微不标准就漏。T04 五种恒真写法漏五种。</li>
+<p>&lt;!-- devgate:ignore-next-line D01 —— 引用的是 protocol 原文里的断链，作为证据保留 --&gt;</p>
+<li><strong>D01 的「首段不存在就跳过」是降噪把真问题一起降掉了</strong>：protocol §9 自己写的 <code>docs/agent-protocol.md</code> 就是活生生的谎言，规则放过了它。</li>
+<li>原文：AGENTS.md 第 3 行写「完整法律见 docs/agent-protocol.md（v0.3 冻结版）」，包内并无 docs 目录。</li>
+</ul>
+<p>---</p>
+<h2>五、修复清单</h2>
+<h3>P0（不修，规范等于自愿遵守）</h3>
+<p>1. <strong>强制入口</strong>：无 open task 时 <code>gate_verify</code> VETO、<code>gate_check</code> WARN。 2. <strong>真实改动集合</strong>：declare 存快照，verify diff 比对 allowPaths，不再依赖自报证据。 3. <strong>验收条件变更留痕</strong>：declare 时 acceptance 与旧值不同 → 写 <code>.gate/task-history.jsonl</code>，要求 reason，否则 WARN。 4. <strong>过程预期字段</strong>：declare 加 <code>expect</code>（一句话：改完预期哪个测试通过/什么行为变化），verify 时核对「中/未中」。</p>
+<h3>P1（影响日常判定）</h3>
+<p>5. T04 扩：自反比较 <code>x === x</code>、<code>a).toBe(a</code>、恒真不等式、<code>toBeTruthy(true)</code>、<code>assertTrue(true)</code>。 6. E01 扩：<code>return null/false</code>、<code>.catch(() =&gt; {})</code>、同行 <code>except: pass</code>、<code>except: continue</code>、catch 内只有 log。 7. H01 扩：变量名含 key/token/secret/cred + 高熵串；AWS <code>AKIA</code>、GitHub <code>ghp_</code>、Slack <code>xox</code> 前缀；<code>.env</code> 文件纳入扫描。 8. D01 修：同时试「相对 root」与「相对工作区根」，修掉子目录扫描误跳过。 9. I-5.7 双验证结构化：evidence 加 <code>phase: "fail-before" | "pass-after"</code>，改测试时必须两条，缺一条 VETO。 10. WORK_STATE 新鲜度：存在但 &gt;14 天未更新 → INFO；未存在且 level ≥ L3 → WARN。</p>
+<h3>P2（长期）</h3>
+<p>11. 指标计算：从 evidence.jsonl 算越界率、无证据率、空转率、证据完整率（§10）。 12. 真变异测试（v1.0 §6.2）：对 JS/Python 做等价变异，跑测试看是否红；这是唯一能给「校验器质量」定量的手段。 13. 结构一致性轻量版（I-3 唯一可自动化的部分）：循环依赖、跨模块深路径 import、重复代码块哈希。 14. 并行方案登记（v1.0 §7）：同一目标下多个方案各自攒证据，超限淘汰。</p>
+<p>---</p>
+<h2>六、留给人工的（按 §8，agent 不提议只记录）</h2>
+<p>1. <strong>优先级裁决顺序缺失</strong>（§12.1 自认）：用户目标 / 项目规范 / 架构决策 / 技术限制冲突时谁赢。现在没有答案，实操全靠现场拍。 2. <strong>L1–L5 边界靠感觉</strong>：什么算「单模块」、什么算「跨模块」没有判据，level 由 agent 自己填，填低就少检查。 3. <strong>空转只停不归因</strong>（§11.2）：停了之后是任务太难、上下文腐化还是目标本身错了，没有归因树。 4. <strong>多 agent 交叉验证</strong>（§11.3）：完全没覆盖，而 devgate 恰好可以做成「另一个 agent 来审」。 5. <strong>告警通胀</strong>（v1.0 §9 明令禁止抬高忽略阈值）：现在 111 文件 2 WARN，还算健康；但 T01/T03/T05 全是 WARN，一旦基数涨上来，警告会被整体忽略——这正是规范自己警告的失效模式。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

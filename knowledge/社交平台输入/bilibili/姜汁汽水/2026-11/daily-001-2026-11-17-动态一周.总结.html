@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>姜汁汽水｜动态一周（2026-11-17 → 11-24）</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/knowledge/">← 知识库</a></div>
+<h1>姜汁汽水｜动态一周（2026-11-17 → 11-24）</h1>
+<p class="meta">社交平台输入/bilibili/姜汁汽水/2026-11/daily-001-2026-11-17-动态一周.总结.md　1,619 汉字</p>
+<h1>姜汁汽水｜动态一周（2026-11-17 → 11-24）</h1>
+<ul>
+<li>来源：<code>https://space.bilibili.com/1039025435/dynamic</code></li>
+<li>抓取：2026-11-24，两页共 25 条（本页 13 + 下一页 12），本文只看最近一周 6 条和 11-16 那条作背景</li>
+<li>账号：<code>九天揽月-二狗-章鱼哥</code>（mid 144775445），已订阅该 UP 充电</li>
+</ul>
+<p>---</p>
+<h2>〇、先说鉴权（这是他问的那件事）</h2>
+<p><strong>结论：能不能看到正文，只由 cookie 决定，跟参数无关。</strong></p>
+<p>三次对照（同一个接口 <code>x/polymer/web-dynamic/v1/feed/space?host_mid=1039025435</code>）：</p>
+<p>| 条件 | 结果 | |---|---| | 不带任何 cookie（清空浏览器 cookie） | <code>code 0</code>、13 条、<strong>10 条 <code>MAJOR_TYPE_BLOCKED</code></strong> | | 带登录 cookie、不带 <code>features</code> 参数 | <code>code 0</code>、13 条、<strong>0 条 blocked</strong> | | 带登录 cookie、带 <code>features=itemOpusStyle,listOnlyfans,opusBigCover,onlyfansVote</code> | <code>code 0</code>、13 条、<strong>0 条 blocked</strong> |</p>
+<p>所以：</p>
+<p>1. <strong><code>features</code> 只决定返回结构</strong>（opus 化、大图、投票），不决定解锁。带不带都能看。 2. <strong>解锁靠的是 SESSDATA（登录态）+ 该账号订阅了这个 UP 的充电</strong>。没登录时下发的不是空正文，而是一个"墙"：    <code>major.type = MAJOR_TYPE_BLOCKED</code>、<code>blocked.blocked_type = 3</code>、<code>title = "热点图文速评专属动态"</code>、<code>hint_message = "加入当前UP主的「6元档包月充电」即可解锁观看"</code>、<code>button.text = "6元充电"</code>。 3. <strong>纯 CLI 直连会被风控</strong>：只带 SESSDATA 用 fetch 直连 → <code>{"code":-412,"message":"request was banned"}</code>。要在浏览器上下文里发（<code>credentials:'include'</code>），或者补齐整套浏览器指纹 cookie（<code>buvid3</code>/<code>buvid4</code>/<code>buvid_fp</code>/<code>bili_ticket</code>/<code>b_lsid</code> 等）。同一个请求，在页面里 eval 就通，在 node 里 fetch 就 412。</p>
+<p>复现脚本：<code>.tmp/dyn_page.mjs</code>（登录 + 页面内 fetch，落 <code>.tmp/dyn_page.json</code>）、<code>.tmp/dyn_test2.mjs</code>（清 cookie 对照，验证墙）、<code>.tmp/dyn_parse.mjs</code>（解析 opus 正文）。</p>
+<p>---</p>
+<h2>一、这一周他说了什么（六条，按时间）</h2>
+<h3>11-17 14:39｜视频</h3>
+<p>就是昨天转录整理的那条（<code>BV15qs66qEGh</code>，英伟达/黄金铜/上证科创）。动态本身无正文。</p>
+<h3>11-20 02:33｜「黄金」（5 图）</h3>
+<p>一句话：「动态没办法在文字当中插入图片，所以直接截图。」——正文是图，文字信息为零。</p>
+<h3>11-22 04:46｜「黄金 + 美股」（11 图）</h3>
+<p>主题是<strong>操作方法</strong>，不是行情。</p>
+<ul>
+<li>批评论区"等最低点全仓买、等最高点全仓卖"的思路：巴菲特都不敢这么干。</li>
+<li>黄金是<strong>资产配置</strong>：目的是"积累持有的重量（克数斤数）、尽量降低成本"，不是抓波段。</li>
+<li><strong>把安全线以下的资产和波段资金分开；把投资账户和投机账户分开。</strong> 3200 以下不能动，因为那是长期投资的钱。</li>
+<li>机构做美股有底仓也有对冲，不会随便一键清仓，除非基本面重大变化。</li>
+<li>25 年底反复强调：黄金仓位成本控制在 4200 以下、仓位不超 30%。26 年初那波飙升，控好成本就不会套在最高点。</li>
+</ul>
+<h3>11-22 08:39｜无题（4 图）</h3>
+<p>回应"为什么不在 26 年顶点提示清仓黄金"。他自己列了一张操作回溯表： 1. 24–25 年反复说"不想减仓就必须先控成本"，25 年底反复提示成本压到 4200 以下；25 年 11 月–26 年 1 月底<strong>没有任何加仓</strong>，反复提示不要追高；科创同理，6 月一直提醒不要加仓半导体。 2. 26 年 3 月川普炸死哈梅内伊后没有立刻撤兵 → <strong>他公开说"我的判断错了"</strong>（以为炸完就跑），改为多留现金、减仓黄金；减的理由是 2 月低点 4400 带着做了一波上涨。 3. 3 月 23 日低点，带人从 <strong>4100–4200</strong> 开始加仓；4 月连发 3 条充电视频（限时免费）重点提示减仓。 4. 7 月提示加仓，8 月提示减仓。 另外自认一处错：8 月画的图认为 9/11 通胀数据超预期可能跌到 4200（蓝色线），<strong>蓝色线后半段（11 月）错了</strong>，但当时判断 11 月有反弹可能是合理的，且后续更新来得及。并强调 10/11 视频提示"跌破两个支撑可能到 4000"，10/22 真到 4000，有 10 天窗口可以减仓。</p>
+<h3>11-23 14:24｜「幸亏周日提醒极有可能有反弹」（3 图）</h3>
+<p>「否则今天老黄的新闻直接给你轧空了。图三，上周暂停做空 SOXX，逃过一劫。<strong>美国政治高度渗透美股，做空的单子，最好不要过周末。</strong>」</p>
+<h3>11-23 17:06｜「现在是黄仁勋的"日后招安"？」（4 图）</h3>
+<p>三个判断： 1. 党争全面渗透股市 → <strong>周末成了必须躲的风险</strong>；他说"幸亏上周嗅到了异常"。 2. "秋后祭旗，日后招安"这个判断，现在走到了<strong>招安</strong>这一步；但"裂痕真的能修复吗"存疑。 3. <strong>这是第二次供应链"教做人"</strong>（稀土一次，黄仁勋第二次）：美国砸了那么多钱扶持本土芯片和稀土产能，最后还得向亚洲的生产效率服软；华尔街和硅谷离不开亚洲芯片供应链，没有黄仁勋、靠 MAGA 和建制派摆不平日韩台那一段。</p>
+<h3>11-16 14:58（背景条，不在本周）</h3>
+<p>美元指数像 24 年 10 月（那年换总统，今年换国会）→ 先从美股美债卖出、换手成美元指数、再离开美国资本市场；预期 26 年初类似、27 年美股美元一起跌。另：fed watch 显示 12 月加 50bp 概率不足 10%，大概率加 25bp、27 年只加一次；银行准备金接近危险值，<strong>高度怀疑 12 月重启 RMP（买短债）</strong>；27 年上半年若美股回调大会加大 RMP，27 年下半年降息预期重启。中金文章说 27 年 6 月后原油供给大增 → 川普要开战窗口只剩两个月。</p>
+<p>---</p>
+<h2>二、这周他实际在做的事（三条主线）</h2>
+<p>1. <strong>黄金：不讲点位讲成本。</strong> 一周两条长文都在纠"全仓/清仓"这个动作，反复给的是"成本控制在 4200 以下、仓位不超 30%、3200 以下不动、投资账户和投机账户分开"。这是纪律层，不是预测层。 2. <strong>美股：周末不做空。</strong> 理由不是技术面，是"党争渗透股市"——政策消息在周末出，隔夜没法止损。 3. <strong>叙事：从"祭旗"走到"招安"。</strong> 他把黄仁勋事件读成供应链政治的一次"教做人"，且美国本土产能砸钱也替代不了亚洲效率。</p>
+<h2>三、能直接拿来用的</h2>
+<ul>
+<li><strong>"做空的单子不要过周末"</strong> 这一条是可执行的仓位规则，且理由（政策消息周末出）在 A 股同样成立（周末监管/会议消息），可以进判据库当"事件暴露期降杠杆"。</li>
+<li><strong>"投资账户/投机账户分开、安全线以下不动"</strong> 是仓位结构规则，不依赖任何预测，可以直接套。</li>
+<li><strong>"借金量"这类可观测的数</strong> 他没给；他给的是点位纪律。想验他的框架，还是得去查 LBMA/BIS 的租赁与掉期数据。</li>
+</ul>
+<h2>四、存疑</h2>
+<ul>
+<li>11-22 那条本质是"我历史上提示过"的自证清单，只能信一部分：可核的是<strong>日期与点位</strong>（3/23 说从 4100–4200 加、10/22 跌到 4000），不可核的是"当时大家听进去了没有"。</li>
+<li>"政治高度渗透美股"是个不可证伪的判断，但它导出的动作（周末不留空头）可证伪——可以拿过去两年的周末跳空数据去验。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

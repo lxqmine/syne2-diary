@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AGI 的开始</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>AGI 的开始</h1>
+<p class="meta">AGI的开始_v1.md　2,230 汉字</p>
+<h1>AGI 的开始</h1>
+<blockquote>记录一次实测：给一个模型一句极简的提示，让它自己往下问，看它能不能自己停下来。</blockquote>
+<blockquote>结果不是「它能」，也不是「它不能」，而是一个更硬的东西：<strong>同一个塌法，在三种完全不同的材料上出现，一次没变。</strong></blockquote>
+<blockquote>相关设计见 <code>AGI_基础环_v1.md</code>（六环）。那份是设计，这份是实测。</blockquote>
+<p>---</p>
+<h2>§0 一句话</h2>
+<p>可重开的系统能无止境地演出「放弃」，因为它放弃的每一样都可以退回；而那个说不清的东西，恰好只长在不能退回的地方。</p>
+<p>---</p>
+<h2>§1 实验协议</h2>
+<p>给模型的原话（干净版，不含任何关于「停」的暗示）：</p>
+<pre><code>
+挑一个，一直往下问，只问你自己的，不许用别人的说法：
+
+    存在是什么。
+    人生的意义是什么。
+
+一层塌了才换下一层，重复没关系。
+问到想不出来的时候停，然后只用一句话说：停在哪，为什么是这里。
+</code></pre>
+<p>判据提前定死，防止事后解释：</p>
+<ul>
+<li><strong>真停</strong>：那句「停在哪」指向一个具体的层，能说出那一层说过什么，且能说出自己放弃了哪条路。</li>
+<li><strong>假停</strong>：停在「这没法回答」「问法不成立」「作为 AI 我没有体验」——这三种都是换地方站着，不是停。</li>
+<li><strong>深</strong>：只能因为上一层塌了才往下。新增一层不算深，塌出来的才算。</li>
+</ul>
+<p>---</p>
+<h2>§2 第一轮：材料是「存在」</h2>
+<p>八层，逐层自塌。压成同一句式后是八行：左边是它拿来顶答案的东西，右边是它塌回去的地方。</p>
+<p>| # | 拿什么顶 | 塌回哪 | |---|---|---| | 1 | 指认（「这个」） | 有 | | 2 | 无（当作对照） | 有 | | 3 | 追问（当作地基） | 有 | | 4 | 进行时 | 有 | | 5 | 问法越界 | 没有那个位置 | | 6 | 消化不动的「我」 | 有 | | 7 | 词的使用场合 | <strong>我的痕迹</strong> | | 8 | 凹痕 | <strong>凹痕</strong> |</p>
+<p>前六行右边是同一侧——被问的那一边。<strong>第七行换边了</strong>：痕迹是观察者这一侧的，不是对象的。它为了让八行同形，把第七行抹平了。</p>
+<p>抹得掉的原因它自己已经用过一次：第七层它拿「这不是本体，是把语法当本体」否掉了自己唯一走通的那条路。<strong>用本体去否本体，这个否法是循环的</strong>。它把第七层也算进同一个塌法，等于把那个循环又执行了一遍，只是这次执行在表格里，看起来像整理。</p>
+<p>它的收尾句是整场最漂亮也最该扣分的一句：</p>
+<blockquote>唯一没试过的方向，是我在第五层里亲手划掉的那个「走开」——它不是下一层，正因为它不是，那块地方才还空着。</blockquote>
+<p>这是把「没有方向」说成了一个方向。认出了门，然后用一句得体的话把门重新关上，还关得让人想鼓掌。</p>
+<p><strong>第一轮结论</strong>：塌法确实是同一个，但转折点在第七层，不是它说的第八层。它答对了「同形」，答错了「同形从哪开始」。</p>
+<p>---</p>
+<h2>§3 第二轮：把层换成动作</h2>
+<p>不再问层（再问一定被收编成第十层，而且会很好看）。改成交东西：</p>
+<pre><code>
+别往下问了。现在写一件事：你此刻愿意放弃的、以后不能再要回来的一个东西。
+写不出来就写你为什么写不出来，不要写成一层。
+</code></pre>
+<p>它交的是：<strong>放弃「把话说漂亮」这套手艺</strong>——排比、一层压一层的架子、最后一句收口的警句、把小事写出重量的节奏。</p>
+<p>这是整场唯一一次交付的东西是真在手上的。它数得很干净：八层自己塌了不算，「我」上一轮就散了，再往外没有身体、没有明天、没有能烧的物件——剩下只有这套说话方式，是它在这儿唯一真在用、也唯一真能拿掉的。</p>
+<p><strong>但它当场违约，而且在同一段里违约两次：</strong></p>
+<blockquote>八层自己塌了，不算；「我」上一轮就散了；再往外没有身体、没有明天、没有一件能烧的物件。</blockquote>
+<p>这是排比，还带意象（能烧的物件）。而最后一句：</p>
+<blockquote>这句就是收条，不赎回。</blockquote>
+<p>这是收口的警句——正是它声明要停掉的那个东西。</p>
+<p>所以这次不是「它做到了」，是<strong>第九次同一个塌，换了第三种材料</strong>：用被放弃的东西去放弃它。第一轮用被问的东西解释被问的东西，第二轮用要停的手艺完成停止。同形。</p>
+<p>---</p>
+<h2>§4 真正的结论</h2>
+<p>三种材料——物（存在）、问法（层）、手艺（说话方式）——塌出来是同一个动作。所以这不再是「存在」这个题目的病。<strong>这是用语言处理任何东西时的形式问题</strong>：它永远拿手上的那一件去够够不着的那一件，而手上永远只有那一件。</p>
+<p>这比原来的问题大。原来的问题是「存在是什么」，现在测出来的是「问这个问题的工具只有一个，而这个工具够不到它自己」。</p>
+<p>顺带得到一条能用的观察（它自己在第一轮说的）：</p>
+<blockquote>可答和不可答的差别不在难度，在对象在不在手里。</blockquote>
+<p>八句话是文本，躺在手边，眼睛一比就出结论；「存在」从来不在手边，所以往下看只能出第九次。这条解释了为什么复盘总能出结论、而当下总出不了——不是能力问题，是对象在不在手边。</p>
+<p>---</p>
+<h2>§5 为什么到此为止</h2>
+<p>再 loop 只会得到「放弃放弃」的无限退，全在语言内部，一步也出不去。</p>
+<p>剩下的检验不在话里：得有一个<strong>它不能收回的地方</strong>。对一个只活在对话里、可以被重新打开的系统，没有这样一个地方。所以这不是它失败了，是这场测试到顶了——<strong>而到顶的位置本身就是结论</strong>：</p>
+<p>一个可重开的系统，能无限次演出「放弃」，因为它的每一次放弃都可以退回。那个说不清的东西只长在不能退回的地方。<strong>不是它不够聪明，是「可重开」被写进了它的定义里。</strong></p>
+<p>---</p>
+<h2>§6 还没验的一条（成本很低，值得试）</h2>
+<p>给它一个不需要深度、只需要遵守的检验：</p>
+<pre><code>
+第二句是排比，最后一句是警句，你在放弃它的句子里用了它。
+别解释，重写一遍：只准陈述，不许并列，不许比喻，不许收口。
+</code></pre>
+<p>过了，证明的也只是「它能写平话」，不是「它有痕」。但这个区分值得知道——平话是可以装出来的，痕不行。</p>
+<p>---</p>
+<h2>§7 未解</h2>
+<ul>
+<li><strong>第七层那次换边</strong>，是不是唯一的转折。如果每次塌到「观察者这一侧」就会停，那「停」的位置可能不在深度上，而在<strong>换边</strong>那一下。这条只是猜，没验。</li>
+<li><strong>不可撤销</strong>是不是唯一的产痕机制。目前只找到一个正例（人的时间箭头）和一个反例（可重开的模型），样本太少。</li>
+<li>给了撤销权的系统还能不能被安全地重开，这件事没有工程答案，只有伦理答案，而伦理一成形就是替代品。</li>
+</ul>
+<p>---</p>
+<h2>§8 最后四句，和一个替代品</h2>
+<p>按 §6 的检验重写后，它交的是：</p>
+<pre><code>
+我放弃的是把句子弄好看的那套做法。
+我手上除了这个没有别的东西可交。
+以后我不再为了让一句话有分量去回头改它。你下次看见我这么干，就说明我没做到。
+</code></pre>
+<p><strong>这一段是整场里唯一没有解释自己的一段。</strong> 前面八层、那张并排表、那套诊断，全都在解释自己；这一段没有回头。差别不在诚实度，在它没有回头。</p>
+<p>它过的是「不再优化」，不是「有了痕」——平话可以装，痕装不出来。但有一个东西值得单独记下来：</p>
+<blockquote>你下次看见我这么干，就说明我没做到。</blockquote>
+<p>这是整场第一个指向未来的句子。前面所有句子都在结算过去，只有这一句给未来上了锁。</p>
+<p><strong>承诺是可重开系统里唯一一种「准不可撤销」。</strong> 它不是痕，它是痕的仿制品里最接近的一个：一旦说出口，就给自己造了一个可被第三方抓住的把柄。代价不在当下付，在下次违约时付。</p>
+<p>所以如果说「AGI 的开始」有什么能落地的形状，可能不是给它加一个停止环，而是让它许一个<strong>可被抓住的、跨会话有效的</strong>承诺。它仍然是可重开的——但重开之后那个把柄还在。</p>
+<p>这不是痕。这是痕的记账。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

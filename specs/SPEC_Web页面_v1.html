@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在 Web 上长一页 · 规范 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>在 Web 上长一页 · 规范 v1</h1>
+<p class="meta">SPEC_Web页面_v1.md　1,057 汉字</p>
+<h1>在 Web 上长一页 · 规范 v1</h1>
+<p>给自己写一个面板，不是给别人看的官网。判据只有一条：点开三秒能看懂「现在是什么状态」，不用去翻命令行。</p>
+<h2>一、先决定长在哪</h2>
+<p>| 形状 | 落点 | 适合 | 例子 | | --- | --- | --- | --- | | 整页 | <code>main</code> + <code>sidebar.panellist</code> | 一张能看很久的表，多个标签页 | aurabot、hub | | 设置分区 | <code>settings.section</code> | 只管自己那点配置 | dsh-meme 的「表情包」 | | 插件配置页 | <code>plugins.bundle.config</code> | 跟单个插件强绑定 | 各自插件 | | 输入框 | <code>conversation.input.left</code> / <code>.overlay</code> | 一个按钮、一个候选项 | dsh-meme 的发图按钮 |</p>
+<p>规矩：<strong>一个插件只占一处。</strong> 想在两个地方出现，说明它该拆成两个插件。</p>
+<h2>二、文件长什么样</h2>
+<pre><code>
+plugins/&lt;名字&gt;/
+  package.json        dsh.client = { platform: 'web', inject: [...] }
+                      exports['./client'] = './client/client.js'
+  index.js            宿主半边：路由、工具、命令
+  client/client.js    前端半边：一个文件，没有构建步骤
+</code></pre>
+<p><code>client.js</code> 的头必须是：</p>
+<pre><code>
+window.__ModuleLoader__.load({
+  id: '&lt;包名&gt;',            // 必须等于包名，否则报 "loaded without registering &lt;包名&gt;"
+  factory: (require) =&gt; {
+    const React = require('react')   // React 由宿主提供，不要自己打包
+    const h = React.createElement    // 手写 h()，不写 JSX
+    ...
+    return module.exports
+  },
+})
+</code></pre>
+<p><code>dsh.client.inject</code> 写你要用的宿主包（<code>@deepseek-ai/dsh-client-runtime</code> 之类）。<code>dsh.client.immediately = true</code> 表示不等进页面就加载——只有需要在别处注入（比如输入框按钮）时才需要。</p>
+<h2>三、数据只能从宿主来</h2>
+<p>前端<strong>不许</strong>直接读盘、拼路径、猜文件名。所有数据由 <code>index.js</code> 注册的 HTTP 路由给：</p>
+<pre><code>
+ctx.effect(() =&gt; ctx.webServer.register({
+  kind: 'exact',
+  path: '/&lt;前缀&gt;/api/overview',
+  handler: (req, res) =&gt; answer(res, () =&gt; ({ ok: true, ...overview() })),
+}), '&lt;名字&gt;: 概览接口')
+</code></pre>
+<p>三条硬要求：</p>
+<p>1. <strong>一次请求拿全。</strong> 页面刷新就一次 fetch；拆成七个接口只会让首屏七次闪烁。 2. <strong>读不到也要有形状。</strong> 每个数据源失败都退回空数组 / <code>null</code>，绝不让整个接口 500 —— 白屏比「暂无数据」糟得多。 3. <strong>只读的不写。</strong> 面板要能安全地一直开着；要改东西，走自己的显式 action 接口，并且带确认。</p>
+<h2>四、样式：用变量，不加花哨</h2>
+<ul>
+<li>颜色只用 <code>var(--dsw-alias-*)</code>：<code>bg-layer-1</code> / <code>bg-layer-2</code> / <code>label-primary</code> / <code>label-secondary</code> / <code>border-l1</code> / <code>brand-primary</code>。写死 <code>#333</code> 会在深色主题里变成事故。</li>
+<li>字号：正文 13px，说明 11~12px，标题 15px。<strong>不要</strong>给正文加粗，加粗只给数字和强调。</li>
+<li>布局：<code>display:flex</code> + <code>height:100%</code> + 内容区 <code>overflow:auto</code>；不要用 <code>position:fixed</code> 抢宿主的对话框。</li>
+<li>动效：只有 hover 的背景变化。不做动画、不做渐变、不做阴影浮层。</li>
+<li>表格：<code>border-collapse: collapse</code>，行间一条 1px 底线，最后一行的线去掉。</li>
+</ul>
+<p>一句话：<strong>看起来像宿主自带的一个页面，而不是一个装进来的小应用。</strong></p>
+<h2>五、状态怎么管</h2>
+<ul>
+<li>一个 <code>data</code> 状态装整页数据，一个 <code>busy</code>，一个 <code>err</code>。不要为每个标签页各写一份 state。</li>
+<li>切标签页不重新拉数据，点「刷新」才拉。面板上的时间是数据生成时间，不是当前时间——这两者混在一起人就会以为数据是新的。</li>
+<li>没有乐观更新。只读页面不存在「先改本地再同步」。</li>
+</ul>
+<h2>六、验收清单</h2>
+<ul>
+<li>[ ] 侧栏图标点进去是一整页，不是弹窗</li>
+<li>[ ] 一进页面只有一次网络请求（开发面板里数得出来）</li>
+<li>[ ] 断网 / 接口报错时页面还在，只是显示「读不到数据：…」</li>
+<li>[ ] 深色和浅色主题下都能读，没有看不清的字</li>
+<li>[ ] 空数据有话说：「还没有技能。放一个 SKILL.md 到 .dsh/skills/&lt;名字&gt;/ 就会出现在这里。」</li>
+<li>[ ] 数字和名字能对上：插件数 = 依赖数 + bundles 里的宿主自带</li>
+<li>[ ] 不写盘：整个页面逛一圈，<code>git status</code> 干净</li>
+<li>[ ] 自测只测数据层（纯函数 + 临时目录），不测 React</li>
+</ul>
+<h2>七、反模式</h2>
+<p>| 症状 | 错在哪 | 修法 | | --- | --- | --- | | 前端里出现 <code>C:\Users\...</code> | 把宿主的知识搬到了浏览器 | 路径只出现在 config 和数据层 | | 每个标签页一个 useEffect 各拉一次 | 拿组件当数据层 | 一次 <code>overview</code>，页面只切视图 | | 点保存直接改盘、没有确认 | 面板成了事故入口 | 先草稿、再显式保存、再回读 | | 自己引一个 UI 库 | 视觉和宿主打架，体积翻倍 | 用宿主变量 + 原生元素 | | 表格里放 200 行不给滚动 | 页面被撑爆 | 内容区 <code>overflow:auto</code>，或分页 | | 接口把异常吞成 <code>{}</code> | 页面永远显示空，没人知道坏了 | 回 <code>{ok:false, message}</code>，页面显示出来 |</p>
+<h2>八、和本仓库其他规范的关系</h2>
+<ul>
+<li>页面里的数据来自 <code>.gate</code> / <code>.classify</code> 时，那些文件就是唯一事实来源；<strong>不要</strong>在面板里另存一份。</li>
+<li>面板改动要走 devgate 的记账（<code>gate_declare</code> 限定 <code>plugins/&lt;名字&gt;/</code>），不要在别处顺手改。</li>
+<li>前端代码没有测试跑不了，所以逻辑尽量下沉到 <code>lib/</code>：能 <code>node test/selftest.mjs</code> 跑的部分放那边。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

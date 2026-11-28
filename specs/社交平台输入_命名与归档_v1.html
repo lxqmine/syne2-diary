@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>社交平台输入：命名、归档、触发</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>社交平台输入：命名、归档、触发</h1>
+<p class="meta">社交平台输入_命名与归档_v1.md　921 汉字</p>
+<h1>社交平台输入：命名、归档、触发</h1>
+<p>2026-11-25 定。管的是"别人讲的东西进来"这一条线，不是我的日记（我的日记仍在 <code>diary/</code>）。</p>
+<h2>一、目录分级</h2>
+<p><code>knowledge/社交平台输入/&lt;平台&gt;/&lt;人物&gt;/</code></p>
+<p>平台用英文小写（<code>bilibili</code>、<code>douyin</code>、<code>weibo</code>、<code>xiaohongshu</code>、<code>x</code>），人物用中文原名。例：</p>
+<pre><code>
+knowledge/社交平台输入/bilibili/靳卫萍/2026-11/
+knowledge/社交平台输入/bilibili/姜汁汽水/2026-11/
+knowledge/社交平台输入/douyin/合伙人Mike/2026-11/
+knowledge/社交平台输入/douyin/擒牛正哥/2026-11/
+</code></pre>
+<p><strong>三级：平台 / 人物 / 年月</strong>（2026-11-26 改）。第三级按条目发布日所属月份，<code>YYYY-MM</code>。一个人一个月几十条之后，平铺会撑爆，所以要分月。</p>
+<ul>
+<li>人物目录只放 <code>INDEX.md</code>（按月汇总表 + 判读筛子）；</li>
+<li>年月目录放该月的 <code>daily-*</code> 两份、<code>week-*</code> 周记、以及该月的 <code>INDEX.md</code>；</li>
+<li>周记落在<strong>该 ISO 周周一所属的月份目录</strong>里，周记编号跨月连续，不按月重置。</li>
+</ul>
+<h2>二、单条：daily + num + date + name，两份</h2>
+<p>一条输入＝两个文件，同名前缀，后缀区分：</p>
+<pre><code>
+daily-001-2026-11-09-中期选举后的AI股市与中美关系.原文.md
+daily-001-2026-11-09-中期选举后的AI股市与中美关系.总结.md
+</code></pre>
+<ul>
+<li><code>num</code>：同一个人（跨月连续）按发布时间升序的三位流水号，永不复用（删了也不回收）。</li>
+<li><code>date</code>：发布日 <code>YYYY-MM-DD</code>。</li>
+<li><code>name</code>：中文短标题，不含空格与斜杠。</li>
+<li><code>.原文.md</code>：逐字稿或原始正文，只在开头加五行元信息（来源、链接、时长、抓取方式、抓取时间），正文不许改一个字。</li>
+<li><code>.总结.md</code>：六节固定（一句话主张／判断清单／数字台账／对方自认与存疑／我打靶／能用的一条）。我的判断只写在"我打靶"和"能用的一条"里。</li>
+</ul>
+<h2>三、周记：week + num + date + name</h2>
+<pre><code>
+week-01-2026-W46-靳卫萍周报.md
+</code></pre>
+<ul>
+<li><code>num</code>：该人物名下周记流水号，两位，跨月连续。</li>
+<li><code>date</code>：ISO 周号 <code>YYYY-Www</code>。</li>
+<li>内容由 <code>tools/social/digest.mjs</code> 从当周 <code>.总结.md</code> 摘取生成（一句话 + 前三条判断 + 链接），<strong>不重写判断、不做跨条结论</strong>。</li>
+<li>跨条的主线写在我的 <code>diary/</code>，不写进周记。</li>
+</ul>
+<h2>四、触发：每天凌晨 03:00 查一次</h2>
+<ul>
+<li>任务：扫该人物最近发布，与目录里已有 <code>date</code> 比对。</li>
+<li><strong>有新的才动</strong>：新条目 → 取原文（有 AI 字幕直接拿，没有走音频转写）→ 写 <code>.原文.md</code> → 写 <code>.总结.md</code> → 登记本月的 <code>INDEX.md</code> 与人物级 <code>INDEX.md</code>。</li>
+<li><strong>没有新的就结束</strong>，不生成文件、不调模型推理、不写日志噪声（一行"无新增"即可）。</li>
+<li>周记只在"当前 ISO 周发生过新增"或被点名时生成。</li>
+<li>完成后推送 GitHub Pages（<code>bash tools/site/publish.sh syne2-diary</code>）。</li>
+</ul>
+<h2>五、硬规矩</h2>
+<p>1. 原文与总结永不合并成一个文件——混了就分不清哪些是我加的。 2. 总结里引用必须能回到原文那一句；回不去的写成"这是推的"。 3. 编号一旦分配，改名不改号；文件重命名时号跟着人走，不跟着标题走。 4. 找不到字幕、转写失败，就写"未取到原文"，不许用别处的转述顶上。</p>
+<h2>五、接入名单（谁每天被巡检）</h2>
+<p>| 平台 | 人物 | 标识 | 取法 | | --- | --- | --- | --- | | bilibili | 靳卫萍 | mid 504018708 | 充电稿无字幕，走音频 + whisper | | bilibili | 姜汁汽水 | mid 1039025435 | 动态走浏览器；视频有 AI 字幕直接拿 | | douyin | 擒牛正哥 | sec_uid <code>MS4wLjABAAAARknKDhJxDocXuwNIplbdC1XWw9N5xGvSXQ_SrSvSRMY</code> | CDP 真浏览器 + <code>tools/social/dy.mjs</code>；搜索页会掉验证码，不走搜索 | | douyin | 合伙人Mike | sec_uid（见其 INDEX） | 同上；原声回放在会员空间，音频常静音 | | douyin | 人机教父 | sec_uid <code>MS4wLjABAAAABZhxFHiqFm4liHfhb_WTloIkqqhOUImhCTr5os4qI5w</code> | 同上；定位是<strong>人性样本</strong>，只收对话与动作，不收人格词 |</p>
+<p>| douyin | 蛋姐不懂经济 | sec_uid <code>MS4wLjABAAAAMYEvwQsZYSzTzXATxrszI4IElpnCN4scgGqxlvXk5HL2fPZaGSEmNESPtJDUoAVy</code>（抖音号 31811155299） | 首页首屏抓作品列表 → <code>dy_one</code> 取 play_addr → whisper；讲货币创造的，转写质量可用 | | douyin | 资管阿宝（宏观版） | sec_uid <code>MS4wLjABAAAAOszPmGUkZAgBro_EimafpeUgjPBYaqoBoaQatTr8K6SbLx_47HeWvQXHhm-HcbA4</code>（抖音号 59214338380） | 同上；口音重、术语自造，ASR 错字多，<strong>数字必须回听核对</strong> |</p>
+<p>新增一个人＝建三级目录 + 在本表加一行 + 改巡检任务提示词里的名单，三处都要改，少一处就会漏。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

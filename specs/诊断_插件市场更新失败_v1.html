@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>诊断：插件市场"更新"为什么永远失败、标签为什么一直在</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>诊断：插件市场"更新"为什么永远失败、标签为什么一直在</h1>
+<p class="meta">诊断_插件市场更新失败_v1.md　537 汉字</p>
+<h1>诊断：插件市场"更新"为什么永远失败、标签为什么一直在</h1>
+<p>2026-11-21。对象是 <code>dshmarket</code> 与 DSH Desktop 的 generation 机制。</p>
+<h2>一、现象</h2>
+<p>1. 市场里点"更新"，装完提示"重启后生效"，重启后版本没变，标签还在。 2. 反复点，<code>plugin-operations/operations.jsonl</code> 里 <code>applied</code> 一直是 0。 3. <code>GET /dsh-market/api/v1/updates/summary</code> 说 <code>updatable: 10</code>，标签数就是这个数。</p>
+<h2>二、三条真实的死因（按发现顺序）</h2>
+<h3>1. install 路径按名字判重，不看版本</h3>
+<pre><code>
+POST /dsh-market/install {"url":"https://github.com/omdsh-dev/dsh-mnemon","version":"0.5.50"}
+→ 400 {"error":"已以「dsh-mnemon」安装过同一个插件，无需重复安装"}
+</code></pre>
+<p>已装 0.5.40、要装 0.5.50，它仍然回 <code>already-installed</code>。92 条操作记录里这类 22 次。</p>
+<h3>2. update 路径的目标版本取自声明，不是 registry</h3>
+<p><code>log.ndjson</code> 里 11-08 那批"成功"的更新：</p>
+<pre><code>
+update-start  dsh-connect-workbuddy -&gt; dsh-connect-workbuddy@5.20.2
+update        dsh-connect-workbuddy -&gt; dsh-connect-workbuddy@5.20.2 exit=0
+</code></pre>
+<p>箭头右边就是<strong>当前已装版本</strong>。update 的目标取自 <code>manifestCapture.snapshot.dependencies[name]</code>，也就是 profile <code>package.json</code> 里那一行。 这批依赖全是精确钉版本（<code>"dsh-mnemon": "0.5.40"</code>），所以它每次都原地重装同一个版本， <code>exit=0</code>，然后按规则加一句"重启后生效"。版本没变，标签自然不掉。</p>
+<h3>3. 有 agent 在跑时一律不动文件</h3>
+<pre><code>
+POST /dsh-market/update {"name":"dsh-mnemon","compatVersion":"0.5.50"}
+→ 409 {"error":"有 agent 正在运行（session-...）","agentsBusy":true}
+</code></pre>
+<p>我这一问被拒过两次。界面上点的时候会话是空闲的，这条不成立；但只要有别的 agent 在跑，它就挡。</p>
+<h3>次要：install 失败后会走 remove，而 remove 撞上 pending 检查</h3>
+<pre><code>
+14:17:39  install dsh-mnemon  failed  already-installed
+14:17:40  remove  dsh-mnemon  failed  operation-error
+</code></pre>
+<p>remove 的报错原文：</p>
+<pre><code>
+generation-remove: Pending generation update for billion-context.
+Restart before changing another package, or replace/remove that pending package first.
+</code></pre>
+<p>这条 pending 是上一轮残留（<code>desired.json</code> 与 <code>.generations/live/</code> 不一致时触发）。 本轮重启后已核对：12 条 desired 与 live 逐字一致、<code>staging/</code> 空、 <code>node_modules/&lt;name&gt;</code> 的 junction 全部指向对应 generation 目录 —— 干净。</p>
+<h2>三、能用的两条路</h2>
+<h3>A. 卸载 → 重启 → 安装（唯一能真的升上去）</h3>
+<p>市场里对单个包点"卸载"，重启，再"安装"（装的时候读的是 <code>package.json</code> 的声明， 所以先把声明改成目标版本）。每包一轮重启，10 个包就是 10 轮。</p>
+<p>先拿 <code>dsh-mnemon</code> 试：声明已改成 <code>0.5.50</code>；<code>plugins-data/</code> 下没有它的独立数据目录， 卸载不会带走记忆库以外的配置。</p>
+<h3>B. 关掉市场入口（零风险，但也不再有插件市场）</h3>
+<p><code>plugin_manager set_bundle target=dshmarket enabled=false</code>。标签随之消失， 已装插件照常跑，只是没有市场界面。</p>
+<h2>四、别做的事</h2>
+<ul>
+<li>别点"全部更新"：它就是上面三条死因的批量版，只会再写 10 条 failed。</li>
+<li>别信"重启后生效"：那句话在版本没变时也会出现，它不是版本变了的证据。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

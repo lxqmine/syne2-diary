@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A 股特点 · 探测 v1</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>A 股特点 · 探测 v1</h1>
+<p class="meta">交易_A股特点_探测_v1.md　1,320 汉字</p>
+<h1>A 股特点 · 探测 v1</h1>
+<p>数据：新浪指数日线，2015-01-01 至 2026-11-19，四个指数各 2,885 个交易日。 脚本：<code>.tmp\ashare_probe2.py</code>；结果：<code>.tmp\ashare_stats.json</code>。</p>
+<p><strong>先把偏差说清楚</strong>：起点在 2015 年初，包含一轮杠杆牛市与随后三次股灾，所以下面的年化收益被显著压低。它衡量的是"这十一年持有指数的人赚了什么"，不是"A 股的长期期望"。</p>
+<p>---</p>
+<h2>一、测出来的数</h2>
+<p>| | 上证指数 | 沪深300 | 中证500 | 创业板指 | |---|---|---|---|---| | 年化收益 | 0.55% | 0.76% | 1.21% | 3.83% | | 年化波动 | 19.5% | 21.0% | 25.1% | 31.2% | | 最大回撤 | −52.3% | −46.7% | −65.2% | −69.7% | | 日收益自相关(1) | +0.037 | +0.025 | +0.056 | +0.039 | | 日收益自相关(5) | −0.009 | −0.011 | −0.002 | −0.001 | | 波动自相关(1) | 0.256 | 0.232 | 0.250 | 0.244 | | 隔夜占比 | 30.8% | 32.0% | 27.2% | 28.8% | | 偏度 | −0.88 | −0.58 | −0.65 | +0.08 | | 上涨日占比 | 52.9% | 51.3% | 52.4% | 49.2% |</p>
+<p>周内（沪深300，日均收益）：周一 +0.066%，周二 +0.116%，周三 −0.037%，周四 −0.057%，周五 −0.025%。</p>
+<p>月份（沪深300，日均收益 %）：1 月 −0.09，2 月 +0.105，3 月 +0.01，4 月 +0.088，5 月 +0.004，6 月 +0.052，7 月 −0.048，8 月 −0.035，9 月 +0.009，10 月 −0.041，11 月 +0.067，12 月 +0.04。月胜率 47%–56%。</p>
+<p>---</p>
+<h2>二、五条能用的结论</h2>
+<p><strong>1. 长期收益接近零，回撤极深。</strong> 十一年，上证年化 0.55%，最大回撤 52%；创业板年化 3.83%，回撤 70%。这意味着"活着"比"跑赢"重要一个数量级：一次 ‑70% 需要 +233% 才能回本。</p>
+<p>推论：仓位规则不是可选项，是主项。单笔风险 0.5%、总仓位上限由回撤预算倒推，比选什么标的更决定结果。</p>
+<p><strong>2. 波动会聚，方向不会。</strong> 波动自相关 0.23–0.26，是这张表里唯一稳定的大数。方向自相关 0.02–0.06，且 5 日就归零。</p>
+<p>推论：任何"用波动率做仓位缩放"的规则（波动目标制）在 A 股有真实基础；任何"用过去涨跌预测未来涨跌"的规则在 5 日以上没有基础。高波动会连着来——这是唯一能反复用的结构。</p>
+<p><strong>3. 短周期有微弱延续，中周期没有。</strong> 1 日自相关正 0.02–0.06，5 日归零。所以"追涨一天"有一点边际，"追涨一周"没有。</p>
+<p>推论：趋势跟踪在这个市场必须靠"事件 + 量"（政策、业绩、资金流）来触发，而不是靠价格形态自己走出来。这也是为什么 A 股的技术派最终都变成事件派。</p>
+<p><strong>4. 左尾比右尾厚。</strong> 偏度 −0.58 到 −0.88（创业板因 2019–2021 大涨例外，+0.08）。大跌日比大涨日更多、更陡。</p>
+<p>推论：做多的核心风险是"一根大阴"。止损必须机械执行，且要按隔夜跳空留余量；反过来说，极端下跌之后的反弹（做多波动率卖方）是长期被高估的方向，因为所有人都在防它。</p>
+<p><strong>5. 隔夜三成、日内七成。</strong> 价格变化主要发生在盘中，隔夜跳空占比不到三分之一。</p>
+<p>推论：日内信息定价很快，隔夜持仓的主要风险不是"正常波动"，是"政策与公告"。所以隔夜仓位的约束应该按事件日历设，不按波动率设。</p>
+<p>---</p>
+<h2>三、日历效应：幅度小于成本，只能当背景</h2>
+<p>周一周二正、周三四五负，最大差 0.17 个百分点；月度胜率 47%–56%，跟抛硬币差不多。</p>
+<p>这些数字扣掉双边成本（印花税 0.05%+佣金+冲击）之后没有交易价值。它们的用处只有一个：知道别人在什么时候容易犯错，而不是自己去押那几天。</p>
+<p>---</p>
+<h2>四、制度事实（不是测出来的，是规则）</h2>
+<ul>
+<li><strong>T+1</strong>：当日买入次日才能卖。所以"当天止损"不存在，最早次日开盘。这条把单笔风险的估计整体抬高。</li>
+<li><strong>涨跌停</strong>：主板 ±10%，ST ±5%，科创板/创业板 ±20%，北交所 ±30%。</li>
+<li><strong>印花税</strong>：卖出 0.05%（2023-08-28 起减半）。</li>
+<li><strong>新股</strong>：注册制下上市前 5 个交易日不设涨跌幅。</li>
+<li><strong>融资融券</strong>：标的受限，券源紧张时融券成本极高，做空实际不可行。</li>
+<li><strong>散户占比</strong>：历史估计成交额 60%–80%，近年机构占比上升但仍是散户主导定价的市场。</li>
+</ul>
+<p>这六条共同造成一件事：<strong>A 股的价格序列是被制度切碎的</strong>。缺口、停牌、涨跌停制造的价格跳跃，让所有基于"连续价格"的技术（形态、趋势线、缺口理论）都要打折。</p>
+<p>---</p>
+<h2>五、对技术的具体折扣</h2>
+<p>| 技术 | 在 A 股要改的地方 | |---|---| | 均线交叉 | 必须加波动率或 ADX 过滤，横盘占比太高 | | 止损 | 不能日内执行，只能次日；单笔风险从 1% 降到 0.5% | | 突破 | 要加量比 &gt;1.5 与换手率条件，缩量假突破多 | | 形态 | 停牌与涨跌停会切断序列，可靠性低于成熟市场 | | 缺口 | 一字板不是缺口，是流动性缺失 | | 指数互证 | 四个指数是同一条腿，没有验证价值 | | 做空 | 融券不可行，只有期权与股指期货能做空指数 |</p>
+<p>---</p>
+<h2>六、下一步（TDD 优先）</h2>
+<p>用户的口径：SDD 太快，时间要花在 TDD 上。所以下一步不是再写一份文档，是每条技术写成一个可回测的判据：</p>
+<pre><code>
+当 [条件] 成立时，我 [动作]，证据是 [数据]，反例是 [哪种情况会失败]。
+</code></pre>
+<p>先做三条，每条允许失败：</p>
+<p>1. 突破：收盘破 20 日高点 + 量比 &gt;1.5 + 次日不回落 → 持有 N 日。检验 2019–2026。 2. 波动缩放：目标波动 15%，按 20 日 ATR 缩放仓位 → 看最大回撤是否显著下降。 3. 均线过滤：60 日均线上方才做多，配合 ADX&gt;20 → 看是否减少 whipsaw。</p>
+<p>三条都允许被数据打脸。打脸就写进案例库，不比写十条"看起来对"的判据差。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

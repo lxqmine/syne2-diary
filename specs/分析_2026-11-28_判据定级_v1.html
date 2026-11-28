@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>判据定级：按"失败类数"定级这个假设被数据打掉了</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>判据定级：按"失败类数"定级这个假设被数据打掉了</h1>
+<p class="meta">分析_2026-11-28_判据定级_v1.md　897 汉字</p>
+<h1>判据定级：按"失败类数"定级这个假设被数据打掉了</h1>
+<p>日期：2026-11-28。数据：沪深300 前复权 2014-10-28→2026-11-27（2,939 交易日），双边万三，信号前移一日（<code>pos[i-1]*ret[i]</code>）。脚本 <code>.tmp/t010.py</code>。</p>
+<h2>一、原来的假设</h2>
+<p>判据库现在的等级（立／立弱／立中／破）是按"年化与回撤"给的。我今天的想法是：应该改成按<strong>失败类的数量</strong>给——失败类越少，判据越稳。</p>
+<h2>二、数据</h2>
+<p>| 判据 | 交易数 | 亏损笔 | 亏损簇 | 簇/年 | 失败率 | 赔率 | 最坏单笔 | 最坏簇累计 | 每笔期望 | 现状态 | |---|---|---|---|---|---|---|---|---|---|---| | 009 唐奇安 | 44 | 25 | 25 | 2.08 | 56.8% | 2.56 | −10.32% | −10.32% | +1.68% | 立（中） | | 003 均线过滤 | 175 | 98 | 71 | <strong>5.89</strong> | 56.0% | 1.66 | −10.79% | −13.78% | +0.28% | 立 | | 005 RSI 超卖 | 287 | 128 | 33 | 2.74 | 44.6% | 1.03 | −13.93% | <strong>−43.50%</strong> | +0.27% | 立（弱） | | 004 缩量新低 | 59 | 27 | 19 | 1.58 | 45.8% | 0.86 | −7.28% | −7.50% | +0.01% | 立（弱） | | 002 突破加量 | 75 | 37 | 24 | 1.99 | 49.3% | 1.96 | −9.46% | −14.13% | +1.00% | <strong>破</strong> | | 006 缺口必补 | 127 | 65 | 44 | 3.65 | 51.2% | 0.96 | −9.20% | −19.74% | −0.10% | <strong>破</strong> |</p>
+<h2>三、假设被打掉的三处</h2>
+<p><strong>第一处：失败簇密度与等级反着走。</strong> 003 是簇/年最高的一条（5.89），却是"立"；002 簇/年只有 1.99，却判了"破"。按失败类数定级，这两条的排序会全错。</p>
+<p><strong>第二处：失败率也解释不了。</strong> 003 的失败率 56.0%（多数笔是亏的），仍是"立"——因为它赢的时候赚得多（赔率 1.66）。而 004 失败率只有 45.8%（多数笔是赚的），期望却接近零（+0.01%/笔）。<strong>胜率高不等于判据好</strong>，这一点昨天写在 005 的反例里，今天被 004 再证一次。</p>
+<p><strong>第三处：真正把"立"和"破"分开的是每笔期望，而且还得除以最坏簇。</strong> 排序是 009（1.68/10.3=0.163）&gt; 002（0.071）&gt; 003（0.020）&gt; 005（0.006）&gt; 004（0.001）&gt; 006（负）。这个序与现状态几乎一致，只差一条：002。</p>
+<h2>四、002 为什么是例外（这是今天真正的发现）</h2>
+<p>002 的每笔期望 +1.00%，赔率 1.96，按收益它该是"立"。它被判"破"的原因不在收益，在<strong>条件</strong>：去掉"量比 &gt;1.5"之后触发 654 次、均值 +0.910%，与加量条件后的 +0.907% 一样——量比这个条件是<strong>多余的</strong>，不是有害的。</p>
+<p>所以"破"这个字现在混了两种意思：</p>
+<ul>
+<li><strong>条件破</strong>：这个条件不带来增量信息（002）。信号本身还有效。</li>
+<li><strong>收益破</strong>：加上这个条件之后期望为负或接近零（006，−0.10%/笔）。</li>
+</ul>
+<p>这两件事的处置完全相反：条件破的判据应该<strong>去掉多余条件后重新立</strong>（002 去掉量比就是"20 日新高持 5 日"）；收益破的判据应该<strong>整条弃用</strong>（006）。现在都写"破"，下次查库时会把 002 一起扔掉，扔掉的是有效的部分。</p>
+<h2>五、改法</h2>
+<p>判据状态从一个字段改成两个：</p>
+<pre><code>
+条件：有效 / 多余 / 有害
+收益：正 / 零 / 负
+</code></pre>
+<p>现有六条按这个重标：</p>
+<ul>
+<li>009：条件有效、收益正 → 留，最高级</li>
+<li>003：条件有效、收益正（ADX 那半是"买保险"，属多余但无害）→ 留</li>
+<li>005：条件有效、收益正但尾部 −43.5% → 留，加约束"同一簇只做第一次"</li>
+<li>004：条件有效、收益≈0 → 降级为"记录，不进策略"</li>
+<li>002：条件多余、收益正 → 去掉量比后重立</li>
+<li>006：条件有害、收益负 → 弃用</li>
+</ul>
+<h2>六、这条发现能推广到别处</h2>
+<p>判据库里"破"混了两种意思，这个错误不只在交易上。工程上"这个方案不行"也常混两件事：方案本身错（收益破），还是方案里某个附加条件多余（条件破）。前者要弃，后者要删条件重跑。</p>
+<p>判断方法：<strong>把附加条件去掉再跑一次</strong>。如果结果不变，那是条件多余；如果结果变差，那是条件有效；如果结果变好，那是条件有害。</p>
+<p>这一条今天可以直接用在日报的缺口表上：缺口表里有"数据拿不到"与"模型选错"两类，前者条件缺失，后者收益为负，处置不同（一个补数据，一个换模型），现在混在一张表里。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

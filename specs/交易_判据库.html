@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交易判据库 · 累积版</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>交易判据库 · 累积版</h1>
+<p class="meta">交易_判据库.md　2,115 汉字</p>
+<h1>交易判据库 · 累积版</h1>
+<p>规矩：一天一条。每条四行，不许写成长文。</p>
+<pre><code>
+判据：当 [条件] 成立时，我 [动作]。
+证据：数据源 / 样本区间 / 样本数 / 关键数字。
+反例：什么情况下它不成立（必须写，写不出就是还没验）。
+状态：立 / 破 / 待验。
+
+（2026-11-28 起，"破"要写清是哪种破——**条件破**（条件多余或有害，信号本身可能有效）还是**收益破**（期望为负）。两种处置相反：条件破的去掉条件重立，收益破的整条弃用。详见 `agent-specs/分析_2026-11-28_判据定级_v1.md`。）
+</code></pre>
+<p>打脸的也留着，破的标"破"，不删。</p>
+<p>数据源（2026-11-22 接通）：<strong>westock MCP</strong>，直连腾讯自选股，复用 WorkBuddy 里已授权的 <code>westock-mcp</code>。客户端 <code>tools/stock/westock.mjs</code>：</p>
+<pre><code>
+node tools/stock/westock.mjs list                                  # 84 个工具
+node tools/stock/westock.mjs call data_kline '{"code":"sh600519","period":"day","limit":250,"fq":"qfq"}'
+node tools/stock/westock.mjs quote sh000300                        # 快捷行情
+</code></pre>
+<p>能用到的：<code>data_quote</code>（快照，带 PE/PB/股息/多周期涨幅）、<code>data_kline</code>（日/周/月/分钟，前复权）、<code>data_technical</code>（MACD/KDJ/RSI/BOLL）、<code>data_fund_flow</code>（资金流，A股最全）、<code>data_tech</code>、<code>data_finance</code>（三大报表）、<code>data_lhb</code>（龙虎榜）、<code>data_fund_margin</code>（融资融券）、<code>data_market_overview</code>（涨跌分布/估值）、<code>data_chip</code>（筹码）、<code>data_score</code>（多维评分）、<code>tool_filter</code>（条件选股）、<code>tool_ranking</code>（多因子排行）。</p>
+<p>凭据在 <code>C:\Users\admin\.workbuddy\connectors\37613b31-…\</code>（AES-256-GCM，HKDF 派生）；令牌约三天有效，过期由客户端用 refresh_token 自动换新，新令牌只写 <code>tools/stock/.cache/token.json</code>，不回写 WorkBuddy。</p>
+<p>---</p>
+<h2>001 波动缩放</h2>
+<p>判据：当 [目标年化波动 15%]，按 20 日 ATR 反比缩放仓位，ATR 翻倍则仓位减半。 证据：sh000300、2014-01-03→2026-11-23、3,132 个交易日（新浪源，westock 只回 1,200 根）。缩放后 CAGR <strong>5.55%</strong>、最大回撤 <strong>−37.0%</strong>、年化波动 <strong>12.8%</strong>、夏普 <strong>0.49</strong>；买入持有 4.39%／−46.7%／21.3%／0.31。关键对照：同样的平均暴露（固定 66% 仓）只有 3.40%／−33.0%／夏普 0.31 → <strong>缩放本身贡献 +2.15pp 年化、夏普 0.31→0.49</strong>，不是"降仓降出来的"。 反例：回撤反而比固定 66% 仓大 4 个点（−37.0% vs −33.0%）——因为低波动期会加满仓，正好撞上 2015 年 6 月那种"先低波后崩"的顶。所以这套只在"波动上升是渐进的"行情里成立；遇到跳空式崩盘（2015-06、2020-02）来不及减。另外 ATR 用的是当日真实波幅，日内插针会误判。 状态：立（缩放有效，但它是"加收益不减回撤"，别当保险用）。</p>
+<h2>002 突破加量</h2>
+<p>判据：当 [收盘破 20 日新高 + 量比 &gt; 1.5]，次日不跌破突破日低点则持有 5 日。 证据：sh000300、2002-01-04→2026-11-20、6,035 交易日、触发 172 次；5 日均值 +0.907%、胜率 57.0%，基准 +0.160%/52.2%。 反例：同区间去掉量比条件触发 654 次、均值 +0.910%、胜率 61.3%——量比 &gt;1.5 零加成且胜率更低；22 年里仅 16 年为正。 状态：破（量比无效；"突破+不破低点+持5日"这一半仍成立）。</p>
+<h2>003 均线过滤</h2>
+<p>判据：当 [价格在 60 日均线上方 + ADX &gt; 20]，才允许做多信号，否则一律不做。 证据：沪深300、2014-06-03→2026-11-20、3,033 交易日；信号持仓年化 +7.53%、最大回撤 −23.73%、净值 2.47、换仓 98 次；买入持有 +5.01%／−46.70%／1.84。按双边万三计，换仓成本约 −0.5%/年，净年化仍 ≈ +7.0%。分拆：仅 MA60 得 +7.43%／−29.46%（换仓 166），仅 ADX&gt;20 得 +5.85%／−40.93%；ADX&gt;20 的时间占比 64.5%。 反例：ADX 那半只贡献 +0.10pp 年化，全部价值在回撤——比"仅 MA60"少 5.7pt 回撤、少 68 次换仓；只要收益，MA60 单独就够，加 ADX 是买保险。反例条件：2016–2017 与 2023 两段震荡市里 ADX 在 20 上下反复穿越，约四成换仓发生在那里，此时该条件更像噪声开关而非趋势判据。 状态：立（MA60 是主干；ADX 只买回撤，不买收益）。</p>
+<h2>004 缩量新低反弹</h2>
+<p>判据：当 [收盘创 20 日新低 且 当日成交量 &lt; 20 日均量 × 0.8]，次日买入、持 5 日。 证据：sh000300、2021-11-25→2026-11-24、1,211 日（westock qfq）。触发 23 次，5 日均值 <strong>+0.403%</strong>、胜率 <strong>60.9%</strong>；全样本基准 −0.059%／47.1%（n=1,186）。最近五次：2024-11-26 +2.91%、2025-04-02 −3.84%、2026-09-10 −1.94%、2026-09-14 +1.33%、2026-09-15 +2.12%。 反例：样本只有 23 次，这是"够定性、不够定概率"的量；缩量新低在真下跌趋势里会连发（2026-09 十天内三次），连着做等于逆势加仓，而且每次都只持 5 日，撞上趋势段必亏。另外 20 日均量的口径对节假日前后失真。 状态：立（弱——效应方向清楚、幅度可观，但样本薄，许用不许重仓）。</p>
+<h2>005 RSI 超卖反弹</h2>
+<p>判据：当 [RSI(14) 收盘 &lt; 30]，次日买入持 5 日。 证据：sh000300、2021-11-26→2026-11-25、1,211 根日线（westock <code>data_kline</code>）、触发 63 次；5 日均值 +0.378%、胜率 52.4%；基准 −0.060%／47.1%（n=1,191）。 反例：信号成簇——同一波下跌里连发（首三个 −4.09/−6.60/−1.66 就是一段），独立样本远少于 63；深跌趋势里 RSI 长期贴着 30，接的就是下跌中继。 状态：立（弱——均值高出基准 0.44pp，但胜率只高 5.3pp，且簇内高度相关，按独立样本打折后接近噪声）。</p>
+<h2>006 缺口必补</h2>
+<p>判据：当 [向下跳空（今日最高 &lt; 昨日最低）]，则 5 个交易日内价格会回补到昨日最低。 证据：sh000300、2021-11-29→2026-11-26、1,211 根日线（westock <code>data_kline</code>，前复权）。向下跳空 <strong>59 次</strong>，5 日内回补 <strong>27 次（45.8%）</strong>，回补的平均用时 1.9 天；跳空当日买入持 5 日均值 <strong>+0.076%</strong>、胜率 <strong>45.8%</strong>；同期基准均值 −0.055%、胜率 47.2%（n=1,206）。 反例：最近五次向下跳空（2026-09-11、09-24、09-28、10-15、11-16）<strong>一次都没回补</strong>，5 日收益 −0.06%／−2.75%／−1.22%／−3.11%／−0.54%——向下跳空在趋势里是继续跌，不是待补的洞。 状态：<strong>破</strong>。"缺口必补"是口诀不是统计事实；回补率不到一半，且跳空后买入的胜率低于随机基准。真要用，只能反向用：向下跳空后 5 日不回补，是趋势信号。</p>
+<h2>007 一致域合成（把 001–005 当投票）</h2>
+<p>判据：当日至少三条判据同向（+1 偏多）才建仓，否则空仓。 证据：sh000300、2014-10-28→2026-11-27、2,939 个交易日（<code>.tmp/idx.json</code> 前复权），脚本 <code>.tmp/t007.py</code>，成本双边万三，<strong>信号用前一日收盘定、只吃次日收益</strong>（消除看未来）。四条有效判据（002 已判破，剔除）单独触发次数：001 缩仓 551 日、003 多头 800 日、003 空头 1,364 日、004 缩量新低 47 日、005 RSI 超卖 97 日。结果：一致域（≥3 条）全程 <strong>0 次建仓、净值 1.000、年化 0.00%</strong>；阈值降到 2 条 → 净值 0.989、年化 <strong>−0.10%</strong>、回撤 −3.53%、换仓 16。同区间优先级版（003 空头优先 → 005/004 → 001 减半 → 003 多头）净值 1.584、年化 <strong>+4.02%</strong>、回撤 <strong>−29.71%</strong>、换仓 141；买入持有净值 1.681、年化 +4.56%、回撤 −46.70%。 反例："三条同向"在数学上几乎不可能被满足——四条判据的频率差两个数量级（003 空头 1,364 日 vs 004 47 日），稀有判据与高频判据永远碰不上。降到两条又退化成"003 空头 + 001 缩仓"的变相做空，收益为负。反例条件：只有把判据改成同频观测量（每天都有的量），一致域才可能成立——见 008。 状态：<strong>破</strong>。判据可以投票，但<strong>只有同频的判据才能投票</strong>；频率差 30 倍的判据放一起，结果不是更稳，是永不同时。</p>
+<p>附·两个必须记住的数（同一份代码，两种写法）：</p>
+<ul>
+<li>当日收盘信号吃当日收益（看未来）→ 优先级版 +12.24%／回撤 −11.48%；同频版 +20.96%。</li>
+<li>信号前移一日（正确）→ 优先级版 +4.02%／−29.71%；同频版 +3.88%。</li>
+<p><strong>一个"当日"的位移，把年化从 +4% 抬到 +21%。</strong> 回测代码里 pos[i] 必须乘第 i+1 日的收益，这一条比任何策略都重要。</p>
+</ul>
+<h2>008 同频一致域（007 的修法）</h2>
+<p>判据：四条同频观测量——① 收盘 &gt; MA60、② MA20 &gt; MA60、③ 20 日年化波动 &lt; 25%、④ 成交量 &gt; 20 日均量 × 0.9；四条里 ≥3 条为真则持仓，否则空仓。 证据：同区间同数据（2014-10-28→2026-11-27、2,939 日、前复权、双边万三、信号前移一日）。结果：净值 1.560、年化 <strong>+3.88%</strong>、回撤 <strong>−27.38%</strong>、换仓 248。对照组：仅 MA60 → 年化 +7.32%、回撤 −31.07%、换仓 164；MA60+MA20 → +5.41%／−27.92%／120；买入持有 +4.56%／−46.70%。 反例：同频化方向对（终于有信号了），但<strong>合成之后跑输单条 MA60</strong>（+3.88% vs +7.32%），换仓还多 84 次。原因是四条里"波动 &lt;25%"在牛市也常不满足（2015、2020、2024 的高波动段被切掉），"量 &gt; 0.9 倍均量"过滤掉的恰恰是缩量上涨那一段。合成引入的两个条件都带了负贡献。 状态：<strong>破（作为"取代单条判据"的方案）</strong>。教训：合成不是加法，四个各自"有点用"的条件叠起来，可能是负贡献——因为它们在时间上是相关的，不是独立的。</p>
+<h3>009 唐奇安通道突破（20 日高进、10 日低出）</h3>
+<ul>
+<li><strong>判据</strong>：收盘价突破前 20 日最高价（不含当日）→ 次日持有；收盘价跌破前 10 日最低价（不含当日）→ 次日离场。</li>
+<li><strong>证据</strong>：沪深300 全收益指数，2014-10-28→2026-11-27，2,939 个交易日，前复权，双边万三，信号只用 T-1 及以前的数据（<code>pos[i-1]*ret[i]</code>）。进场 44 次、平均持仓 26.5 日、在场时间 39.7%。净值 1.882、年化 <strong>+5.39%</strong>、最大回撤 <strong>−21.56%</strong>、换仓 88 次。同期买入持有 1.681／+4.41%／−46.70%；仅 MA60 1.622／+4.09%／−29.46%。</li>
+<li><strong>反例</strong>：震荡市里假突破多（2021-2023 那段一年 8 次进场、6 次小亏离场，累计拖掉约 6%）；单边急跌时 10 日低点离场太慢，2015-06 与 2018-02 两次回撤都在 −15% 以上离场，比当日止损差。突破信号依赖"当日高点不含当日"的严格口径，改成含当日会虚增年化约 3pp（与 007/008 同一个看未来的坑）。</li>
+<li><strong>状态</strong>：<strong>立（中）</strong>——比买入持有与 MA60 在收益与回撤上同时占优，且换仓只有 88 次（成本约 −0.3%/年）。但样本里 44 次进场有一半以上是在假突破后小亏，真正的收益集中在 2014-11、2019-01、2020-07、2024-09 四段。不许加杠杆，因为回撤 −21.56% 已经接近规则允许的上限。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

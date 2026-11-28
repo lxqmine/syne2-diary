@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>《一碗》影像化：13 格分镜 + 生成提示词包</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>《一碗》影像化：13 格分镜 + 生成提示词包</h1>
+<p class="meta">视频_一碗_分镜与提示词_v1.md　1,970 汉字</p>
+<h1>《一碗》影像化：13 格分镜 + 生成提示词包</h1>
+<p>原著：<a href="&lt;F:/workspace/syne2/agent-specs/故事_一碗_v1.md&gt;">故事_一碗_v1.md</a> 成片长度：75 秒。画幅 2.39:1（比 16:9 更横，能装下雨和空位）。 可播放 animatic：<a href="&lt;F:/workspace/syne2/agent-specs/video/一碗_animatic.html&gt;">一碗_animatic.html</a></p>
+<h2>一、总原则（先定，后画）</h2>
+<p>1. <strong>全片只有一次重复，就是 S03 与 S10 的同机位。</strong> 这两格必须同焦段、同高度、同构图，连碗的位置都一样。观众第二次看见这个构图时，缺的那个人不需要被提到。 2. <strong>不许有闪回。</strong> 时间靠物件替换（电话簿 → 塑料凳 → 空），不靠叠化、不靠回忆滤镜。 3. <strong>每格只装一个动作。</strong> 动作超过一个就拆格；拆不动说明这格没想清楚。 4. <strong>镜头运动只用在两处</strong>：S12 的手持跟随，和 S13 的极缓推近。其余全固定。固定镜头才留得住"没人说话"的那几秒。 5. <strong>声音先行</strong>：雨声是底噪，从头铺到尾；S08 之后雨声变大，人声退到后面。</p>
+<h2>二、空间与人物锚点（每条提示词都要带）</h2>
+<ul>
+<li><strong>面馆</strong>：左侧玻璃门（门上有铃），右侧收银台（木质，边上贴褪色菜单），中间三张方桌；主桌是靠窗第二张。灯是暖白 4000K，招牌红底白字"老陈面馆"。</li>
+<li><strong>父亲</strong>：45 岁，深灰夹克，短发，右手虎口一道旧疤。全程不换衣服（三天都在同一个冬天）。</li>
+<li><strong>小雨</strong>：S02 六岁（红羽绒服，袖口有毛边），S04 十一岁（黑色校服外套，头发扎起来），S09 起只存在于缺席里。</li>
+<li><strong>碗</strong>：白瓷蓝边。牛肉面红汤、两片牛肉、香菜一把；清汤透明、只有葱花。</li>
+<li><strong>季节</strong>：初冬，雨，玻璃上永远有水痕。</li>
+</ul>
+<h2>三、13 格</h2>
+<p>| # | 时间 | 时长 | 景别/机位 | 画面 | 声音 | |---|---|---|---|---|---| | S01 | 0:00 | 4s | 大远景 / 街对面，固定 | 雨夜，一排店都黑了，只有"老陈面馆"灯箱亮着，玻璃上水痕往下走 | 雨、远处车流 | | S02 | 0:04 | 6s | 特写 / 俯拍桌面以下，固定 | 一本 1998 年电话簿垫在椅子上，封皮被油浸透；一只六岁的手扶着桌沿 | 抽油烟机、筷子碰碗 | | S03 | 0:10 | 6s | 特写 / 平视两碗面，固定 | 一双小筷子把葱花一根根夹到左边碗里，夹得很慢 | 挑葱花的细响 | | S04 | 0:16 | 6s | 中景 / 同侧固定 | 同一张桌，电话簿没了，换成塑料凳；少女自己拉椅子坐下 | 椅子腿刮地 | | S05 | 0:22 | 6s | 特写 / 侧后方，固定 | 筷子停在碗沿；一滴油落到桌上；手机屏亮着，映在她下巴上 | 手机震动、雨 | | S06 | 0:28 | 6s | 中近景 / 过肩，固定 | 父亲伸手把桌上那滴油抹掉，抹在自己裤子上；手回到膝盖 | 布料摩擦 | | S07 | 0:34 | 6s | 双人 / 收银台过肩，固定 | 老板收钱："清汤还不要香菜吧？"父亲："今天没点清汤。" | 收银机、雨 | | S08 | 0:40 | 6s | 空镜 / 窗外往里，固定 | 雨更大，玻璃上全是水；桌边一张塑料凳，没人 | 雨（放大），人声消失 | | S09 | 0:46 | 6s | 俯拍 / 正上方，固定 | 两碗面同时放上桌，热气往上冲，糊了一下镜头 | 两只碗落桌（一先一后） | | S10 | 0:52 | 6s | 特写 / 平视两碗面（<strong>与 S03 同机位同焦段</strong>） | 一只成年人的手把香菜一根根夹出来，夹完，把那碗推回原处 | 挑香菜的细响（与 S03 同一条音效） | | S11 | 0:58 | 6s | 中景 / 收银台，固定 | 他付钱，两张纸币推过去；老板看他一眼，找了零 | 纸币、硬币 | | S12 | 1:04 | 8s | 长镜头 / 手持跟随，一镜到底 | 推门（铃响），雨打到脸上；走出去五六步，站住，回头，冲玻璃门里喊"还是两碗" | 门铃、雨、喊声被雨吃掉一半 | | S13 | 1:12 | 3s | 中景 / 门内向外，极缓推近 | 老板在里面点头，玻璃反着他的影子和灯箱 | 雨，渐弱 |</p>
+<h2>四、生成提示词（每格一条，含负向）</h2>
+<p>通用后缀（贴每条末尾）：<code>2.39:1 画幅，初冬雨夜，湿润空气，低饱和，胶片颗粒，自然光，实景，35mm 定焦，浅景深，无字幕，无 logo</code> 通用负向：<code>文字水印，字幕，logo，卡通，3D 渲染，塑料感，过曝，磨皮，多余人物，快速剪辑，镜头抖动（S12 除外）</code></p>
+<ul>
+<li><strong>S01</strong>：<code>雨夜街景，整排店铺熄灯，唯有一家小面馆的红色灯箱亮着，玻璃门内侧有水汽，人行道反光；固定机位，大远景。</code></li>
+<li><strong>S02</strong>：<code>俯拍桌下，一本 1998 年的旧电话簿垫在儿童椅上当坐垫，封皮油渍发亮；一只六岁孩子的手扶住桌沿；特写。</code></li>
+<li><strong>S03</strong>：<code>平视，桌上两碗面：左边清汤只有葱花，右边牛肉面红汤带香菜；一双小孩子用的筷子正把葱花从右碗夹到左碗，动作进行中；特写，浅景深。</code></li>
+<li><strong>S04</strong>：<code>同一张靠窗的方桌，桌边换成一张红色塑料凳；十一岁女孩穿黑色校服外套坐下，自己拉开椅子；中景，固定。</code></li>
+<li><strong>S05</strong>：<code>侧后方特写，女孩低头看手机，筷子横停在碗沿，一滴油正落到桌面；手机的光照在她下巴上；雨在窗外。</code></li>
+<li><strong>S06</strong>：<code>过肩中近景，中年男人穿深灰夹克，伸手用拇指抹掉桌上一点油，顺手抹在自己裤子上；右手虎口有旧疤；固定。</code></li>
+<li><strong>S07</strong>：<code>收银台过肩双人，木台面贴着褪色菜单；老板穿围裙在数零钱；男人站着，手插在夹克口袋里；暖白灯光；固定。</code></li>
+<li><strong>S08</strong>：<code>从店内向外拍，玻璃上全是雨水；画面里只有一张空桌和一张塑料凳；雨声很大；固定，空镜。</code></li>
+<li><strong>S09</strong>：<code>正上方俯拍，两碗面同时被放上桌，热气直冲镜头，画面短暂发白；白瓷蓝边碗；固定。</code></li>
+<li><strong>S10</strong>：<code><strong>与 S03 完全相同的机位、焦段和构图</strong>；桌上仍是两碗面，但夹香菜的手是成年人的，手背有旧疤；他把香菜夹到自己碗里，然后把对面那碗推回去；特写。</code></li>
+<li><strong>S11</strong>：<code>收银台中景，男人把两张纸币推过台面，老板抬眼看他一下，低头找零；硬币落在台面上；暖白灯；固定。</code></li>
+<li><strong>S12</strong>：<code>手持跟随，男人推开带铃的玻璃门走进雨里，雨点打在肩上；他走出五六步后停住，回头，朝门里喊了一句；一镜到底不切；雨幕，街灯散景。</code></li>
+<li><strong>S13</strong>：<code>门内向外的中景，老板站在收银台后点了一下头；玻璃上映出红色灯箱和街上的人影；极缓推近；雨声渐弱。</code></li>
+</ul>
+<h2>五、生成与组装流程</h2>
+<p>1. <strong>先出静帧</strong>：S02/S03/S05/S06/S10 五格先出图，因为全片的"手"都在这五格里。手不对，整片就废。 2. <strong>锁 S03</strong>：S03 定稿后把它当 S10 的参考图（首帧条件），S10 只改手（换成成年人的手 + 虎口旧疤），构图一个像素都别动。 3. <strong>视频化</strong>：每格生成 5 秒（S12 生成 8 秒），统一 24fps；运动幅度写进提示词，模型容易自己加运镜，负向里写死"相机固定"。 4. <strong>剪</strong>：只在 S01→S02、S07→S08 用 12 帧交叉溶解，其余全部硬切。S12 绝对不切。 5. <strong>声</strong>：一条雨声铺满 75 秒，S08 处推 +6dB；S03 与 S10 用同一条挑菜音效（这是"重复"在听觉上的落实）；全片无配乐，只在 S12 后半段加一条 40Hz 低频。 6. <strong>组装（有 ffmpeg 的机器上）</strong>：</p>
+<pre><code>
+# 每格单独生成后，按顺序 concat
+printf "file 'S%02d.mp4'\n" 1 2 3 4 5 6 7 8 9 10 11 12 13 &gt; list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy body.mp4
+# 混声：雨 + 音效 + 低频
+ffmpeg -i body.mp4 -i rain.wav -i sfx.wav -filter_complex \
+  "[1:a]volume=0.7,afade=t=in:d=2[a1];[2:a]volume=0.9[a2];[a1][a2]amix=inputs=2:duration=longest[a]" \
+  -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 192k 一碗_final.mp4
+</code></pre>
+<h2>六、这台机器上的现状</h2>
+<p>没有 ffmpeg、没有 cv2、没有 Pillow，本地出不了 MP4。所以先交了一个<strong>可播放的 animatic</strong>（HTML，双击就放，带时间码、逐格提示词、进度条），把节奏和时长先钉死——时长不对，后面生多少素材都是白生。等哪天有 ffmpeg，把上面 13 段素材丢进第五节的命令就能出片。</p>
+<h2>七、自检</h2>
+<ul>
+<li>S03 和 S10 能不能被并排放在一起，看不出是两格？看不出，重做。</li>
+<li>把音轨全静音，故事还成立吗？成立，说明画面自己会说话。</li>
+<li>1:04 那一镜如果剪成三个镜头，力量还剩多少？剩不到一半。所以不许剪。</li>
+<li>全片有没有一处"解释"？有就删，包括那滴油。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

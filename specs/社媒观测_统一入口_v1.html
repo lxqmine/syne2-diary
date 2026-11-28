@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>社媒观测：一个观测面，不是五个客户端</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>社媒观测：一个观测面，不是五个客户端</h1>
+<p class="meta">社媒观测_统一入口_v1.md　2,211 汉字</p>
+<h1>社媒观测：一个观测面，不是五个客户端</h1>
+<p>日期：2026-11-23 状态：设计 + 第一版实现（bilibili、douyin 已跑通）</p>
+<h2>一、命题</h2>
+<p>要做的东西不是"每个平台一个抓取脚本"，是一个<strong>观测面</strong>：同一组动作、同一种返回形状，覆盖所有平台。</p>
+<p>理由：抓取代码是一次性的，观测面是可累积的。前者每加一个平台就多一份要维护的东西，后者每加一个平台只多一个 adapter。</p>
+<h2>二、只做四个动作</h2>
+<p>| 动作 | 语义 | 参数 | | --- | --- | --- | | <code>hot</code> | 平台此刻在推什么（榜单前 N） | <code>platform, n</code> | | <code>search</code> | 按关键词找内容 | <code>platform, q, n</code> | | <code>item</code> | 单条内容的结构（作者、时间、互动数、正文） | <code>platform, url_or_id</code> | | <code>text</code> | 单条内容的文字（字幕优先，识别兜底） | <code>platform, url</code> |</p>
+<p>不做动作面：不发帖、不点赞、不评论、不批量私信。理由是观测面出错只是数据难看，动作面出错是账号没了。</p>
+<h2>三、平台之间真正能对齐的不是接口，是单位</h2>
+<ul>
+<li><code>hot</code> 对齐的是"平台自己的排序"，不是我重新排的。各平台算法不同，重排会把这个差异抹掉，而差异本身是信息。</li>
+<li><code>search</code> 对齐的是"平台自己的相关度"，同理。</li>
+<li><code>item</code> 对齐的是字段名，不是字段含义（bilibili 的"播放"和 douyin 的"点赞"不可比，所以只归一化名字，不归一化数值）。</li>
+<li><code>text</code> 是唯一能完全对齐的：都是文字。</li>
+</ul>
+<h2>四、三层分裂与解法</h2>
+<p><strong>一、鉴权分裂。</strong> 四种： 1. 公开接口（bilibili 的 <code>x/web-interface/popular</code>）——直接 fetch。 2. 登录态 cookie（bilibili 字幕列表）——<code>.tmp/bili.cookie</code>。 3. 浏览器会话（douyin）——<code>.tmp/edge-profile</code> + CDP，签名由页面自己算。 4. 请求签名（小红书 <code>x-s</code>、微博部分接口）——最贵，要么逆向，要么走 3。</p>
+<p>原则：<strong>能用 3 就不用 4</strong>。浏览器会话这条路一次投入，所有"签名算不出来"的平台都能覆盖，因为它借的是人家自己的前端。</p>
+<p><strong>二、形状分裂。</strong> 时长有 <code>"06:31"</code> 和秒数两种；点赞有 <code>"1.9万"</code> 和整数两种；正文有的带标签有的不带。全部在归一化层处理，adapter 只管原样取。</p>
+<p><strong>三、稳定性分裂。</strong> 接口会变、会限流、会加验证码。所以每个 adapter 必须能回答"这次失败断在哪一层"：会话过期 / 签名不对 / 接口改了 / 被拦。</p>
+<h2>五、架构</h2>
+<pre><code>
+会话层    .tmp/bili.cookie（bilibili） · .tmp/edge-profile + CDP（douyin、以后的小红书/微博）
+取数层    adapters/&lt;platform&gt;.mjs   每个只做 hot / search / item / text
+归一化层  { platform, rank|id, title, author, url, extra{} }
+出口层    CLI（tools/social/probe.mjs）+ MCP server（待做）
+</code></pre>
+<p>出口为什么选 MCP：工具名固定、参数少、返回 JSON，我每次不用重写抓取代码，直接调工具。这也解释了为什么之前 84 个 westock 工具用起来很顺——形状固定。</p>
+<h2>六、平台矩阵</h2>
+<p>| 平台 | 榜单 | 搜索 | 单条 | 文字 | 主要障碍 | | --- | --- | --- | --- | --- | --- | | bilibili | 公开接口 ✓ | 公开接口 ✓ | 公开接口 ✓ | 登录态字幕 ✓ / whisper 兜底 | 无 | | douyin | CDP ✓ | CDP | CDP ✓ | 无字幕接口，只能下载+识别 | MSE（blob 地址），要从网络请求挑流 | | weibo | 热搜有接口，需探 | 需 cookie | 需 cookie | 无字幕概念 | 登录态 | | xiaohongshu | CDP | CDP | CDP | 无 | <code>x-s</code> 签名，只能靠浏览器 | | twitter/X | 需 cookie | 需 cookie | 需 cookie | 无 | 登录态 + 反爬 |</p>
+<h2>七、"社区整体状态"不是榜单，是变化量</h2>
+<p>榜单每天都长得差不多，单看没有信息。真正有用的是<strong>差异</strong>：</p>
+<ul>
+<li>今天新进榜的（前 50 里昨天没有的）</li>
+<li>连续在榜的（说明是结构性话题，不是热点）</li>
+<li>掉出榜的（说明热度已过）</li>
+<li>跨平台同时在推的（真·社会性事件 vs 平台自己的运营）</li>
+</ul>
+<p>所以第二天起要存快照：<code>.data/social/YYYY-MM-DD/&lt;platform&gt;.json</code>，然后算集合差。<strong>这一步才是"看社区整体情况"，前面都只是取数。</strong></p>
+<h2>八、判据</h2>
+<p>一个版本算成的标准：</p>
+<p>1. <code>node tools/social/probe.mjs &lt;platform&gt; --n 10</code> 在 60 秒内给 10 条，字段齐（title/author/url 非空）。 2. 同一条内容连跑两次，<code>url</code> 相同（说明 id 稳定，不是每次新生成）。 3. 失败时输出能指出断在哪层（会话/签名/接口/被拦），不是一句 "fetch failed"。 4. 加一个新平台，只新增一个 adapter 文件，不改归一化层与出口层。</p>
+<h2>九、分步</h2>
+<p>1. <strong>已完成</strong>：<code>tools/social/probe.mjs</code>，bilibili（公开接口）+ douyin（CDP）两个 adapter，统一输出。 2. 下一步：包成 MCP server（四个工具名 <code>social_hot</code> / <code>social_search</code> / <code>social_item</code> / <code>social_text</code>），<code>text</code> 直接复用 <code>tools/media/v2t.py</code>。 3. 再下一步：加 xiaohongshu（CDP 路线，跟 douyin 共用会话层）、weibo（先探接口）。 4. 最后：每日快照 + 差异报告，接进 rabot 语料。</p>
+<h2>十、不做什么</h2>
+<ul>
+<li>不做统一登录：每个平台各存各的会话，不试图做"一个账号通吃"。</li>
+<li>不做全量抓取：只要前 N，够看趋势。</li>
+<li>不做互动：见第二节。</li>
+<li>不追求字段语义可比：跨平台比较只在"有没有""涨没涨"这一层做，数值本身不并表。</li>
+</ul>
+<h2>十一、三家真实请求/响应头（2026-11-23 抓的）</h2>
+<h3>bilibili：鉴权在 Cookie，头里只有"礼貌"</h3>
+<p>请求（<code>x/web-interface/popular</code>）：</p>
+<pre><code>
+GET /x/web-interface/popular?ps=5&amp;pn=1
+User-Agent: Mozilla/5.0
+Referer: https://www.bilibili.com/
+</code></pre>
+<p>响应：</p>
+<pre><code>
+Bili-Status-Code: 0                  ← 业务码独立于 HTTP 码
+Bili-Trace-Id / X-Bili-Trace-Id      ← 双 trace，网关与后端各一段
+X-Rid-Result: 2                      ← 风控结论（2=放行）
+X-Ticket-Status: 1
+Cpu_usage: 71                        ← 后端把自身负载也发出来
+X-Bili-Metadata-Ip-Region: CN
+X-Cache-Webcdn: BYPASS from blzone05 ← 自建 CDN 的缓存决策
+Expires: ...00:15:30Z                ← 比 Date 早一秒，故意的
+Cache-Control: no-cache
+</code></pre>
+<p><code>x/player/wbi/v2</code> 多一个 <code>Set-Cookie: sid=...</code>，接口名带 <code>wbi</code> 但<strong>不校验签名</strong>（实测不带 <code>w_rid</code> 也 200）。</p>
+<h3>douyin：签名在 query，设备指纹也是签名输入</h3>
+<p>请求（<code>/aweme/v1/web/multicast/query/</code>），头只有四个：</p>
+<pre><code>
+uifid: c8ccd135…（256 位十六进制，设备/用户指纹）
+Referer: https://www.douyin.com/hot
+User-Agent: Mozilla/5.0 … Chrome/131.0.0.0
+Accept: application/json, text/plain, */*
+</code></pre>
+<p>真正的东西全在 query：<code>a_bogus</code>（签名，每次不同）、<code>msToken</code>、<code>verifyFp</code>/<code>fp</code>、<code>webid</code>、<code>uifid</code>，外加一长串环境参数（<code>screen_width</code>、<code>screen_height</code>、<code>device_memory</code>、<code>downlink</code>、<code>effective_type</code>、<code>round_trip_time</code>、<code>pc_libra_divert</code>…）。<strong>它把"运行环境"当成签名的一部分。</strong></p>
+<p>响应：</p>
+<pre><code>
+x-tt-trace-id / x-tt-logid / x-tt-trace-host   ← 三层 trace
+x-tt-trace-tag: id=26;cdn-cache=miss;type=dyn
+x-janus-info: MM22hes81…                       ← 网关侧加密载荷
+bd-tt-error-code: 0
+status_code: 0                                 ← body 里再来一份业务码
+cookie_ttwidinfo_webid: 7701097945345574451    ← 服务端把设备 id 塞回客户端
+server-timing: cdn-cache;desc=MISS, edge;dur=2, origin;dur=62
+via: CHN-JSyangzhou-CMCC18-CACHE21[64],…       ← 多级 CDN 路径
+server: TLB
+</code></pre>
+<h3>weibo：不签名，直接给</h3>
+<p>请求：只有 <code>User-Agent</code> + <code>Referer: https://weibo.com/</code>。 响应（<code>ajax/side/hotSearch</code>，匿名 200，52 条）：</p>
+<pre><code>
+set-cookie: XSRF-TOKEN=…; path=/; secure
+PROC_NODE: weibopro-node-web-696b4995c5-9btf7   ← 内网节点名直接暴露
+Lb: 2409:8c00:7821:2303::56
+Ssl_node: mapi-10-54-7-26.hj4.intra.weibo.cn    ← 内网 IP 也在
+x-readtime: 16
+x-frame-options / x-xss-protection / x-content-type-options
+Server: SHANHAI-SERVER
+</code></pre>
+<h3>三家对比，一句话各一条</h3>
+<p>| | 鉴权位置 | 签名 | 业务码 | 反爬手段 | | --- | --- | --- | --- | --- | | bilibili | Cookie（SESSDATA） | 名义有 wbi，实测不校验 | <code>Bili-Status-Code</code> | 风控头 <code>X-Rid-Result</code>，弱 | | douyin | query 里的 <code>a_bogus</code> + 指纹 | 必需，前端 JS 现算 | <code>status_code</code> | 环境指纹进签名，强 | | weibo | 无 | 无 | <code>ok</code> | 几乎无，靠登录态管读以外的动作 |</p>
+<p><strong>结论：三家都不是"在 header 里验 token"的设计，而是三种完全不同的鉴权姿势。</strong> 所以统一入口不能在 header 层做抽象，只能在 adapter 层做——这也是第十二节契约存在的原因。</p>
+<h2>十二、加平台的契约（扩展点）</h2>
+<p>新增一个平台 = 新增 <code>tools/social/adapters/&lt;name&gt;.mjs</code>，导出：</p>
+<pre><code>
+export const meta = {
+  name: 'xiaohongshu',
+  auth: 'browser',        // none | cookie | signature | browser
+  needs: ['edge-profile'],// 声明依赖，缺了就直接报这一层断了
+  actions: ['hot', 'search', 'item', 'text'],
+};
+export async function hot(n) { /* → 归一化数组 */ }
+export async function search(q, n) {}
+export async function item(url) {}
+export async function text(url) {}
+</code></pre>
+<p>约束三条： 1. 返回形状不许改，只能在 <code>extra</code> 里加字段。 2. 不许在 adapter 里做跨平台判断（谁新谁旧、谁热谁冷），那是上层的事。 3. 失败必须抛带层的错误：<code>new Error('auth: 会话过期')</code> / <code>'sign: a_bogus 算不出'</code> / <code>'api: 接口改了'</code> / <code>'block: 被拦'</code>。</p>
+<p>按这个契约，小红书与 X 都走 <code>auth: 'browser'</code>，复用同一个 CDP 会话层，各自只写取数逻辑。</p>
+<h2>十三、视频平台：腾讯视频 / 爱奇艺 / YouTube（2026-11-23 抓的）</h2>
+<h3>爱奇艺：配额头写得最明白</h3>
+<p>真接口是 <code>mesh.if.iqiyi.com</code> 网关，路径全在 <code>/portal/lw/...</code>、<code>/portal/pcw/...</code>：</p>
+<pre><code>
+GET /portal/lw/search/keywords/hotList?device_id=…&amp;v=17.113.27034&amp;appMode=&amp;src=
+GET /portal/pcw/abtest?deviceId=…&amp;version=1.0.0.1
+GET /portal/pcw/weather/data?version=1.0.0.1
+</code></pre>
+<p>响应头（这几条是它最讲究的地方）：</p>
+<pre><code>
+x-ratelimit-limit-1: 20000        ← 配额上限
+x-ratelimit-remaining-1: 169      ← 还剩多少
+x-ratelimit-reset-1: 0
+x-envoy-upstream-service-time: 25 ← 走 Envoy
+x-trace-id: 14a6d9d5b3224084…
+access-control-allow-origin: *    ← CORS 直接放开
+access-control-expose-headers: *
+server: Skywalker/3.10.1/34156    ← 网关代号
+</code></pre>
+<p>另一条 <code>pcw-api.iqiyi.com</code>（3000 配额）响应头里还声明支持 <code>x-b3-traceid</code>/<code>x-b3-spanid</code>——Zipkin 那套 B3 头，说明它内部是标准链路追踪。</p>
+<p><strong>设计特征：把"你能调多少次"当成协议的一部分（配额头 + 429 语义），客户端可以据此自己降速。</strong> 这是四家里唯一这么干的。</p>
+<h3>腾讯视频：trpc 路径 + 老式协议体</h3>
+<pre><code>
+GET https://pbaccess.video.qq.com/trpc.universal_backend_service.hot_word_info.HttpHotWordRecall/GetHotWords
+      ?appID=3172&amp;appKey=lGhFIPeD3HsO9xEp&amp;platform=2&amp;channelID=0&amp;v=2992322
+→ {"data":{"errorCode":0,"hotWordList":[{"searchWord":"斗破苍穹剧场版 双帝之战","itemParams":{"cid":"mzc00200u6gslvo"}}…]}}
+</code></pre>
+<ul>
+<li>路径形态是 <strong>trpc 风格</strong>：<code>/trpc.&lt;包&gt;.&lt;服务&gt;.&lt;方法&gt;/&lt;方法&gt;</code>，一个 URL 里服务名和 HTTP 方法名各出现一次。</li>
+<li>鉴权是最弱的一种：<code>appID=3172&amp;appKey=lGhFIPeD3HsO9xEp</code> 明文写在 query 里——这个 key 是从页面源码抄的，等于公开。</li>
+<li>老式协议体：<code>{"ret":0,"msg":""}</code>（<code>getPage</code> 那类接口就是这样，ret 非 0 才有 msg），新接口换成 <code>{"data":{"errorCode":0}}</code>，两套并存。</li>
+<li>响应头把链路信息全放出来：<code>x-client-ip</code>、<code>x-server-ip</code>、<code>x-upstream-ip</code>、<code>x-nws-log-uuid</code>、<code>x-cache-lookup: Cache Miss</code>，配 <code>age</code>/<code>expires</code> 做 60 秒缓存。</li>
+</ul>
+<p><strong>设计特征：方法名进 URL、appKey 进 query——鉴权等于没有，防的是"别人乱调"，不是"别人知道"。</strong></p>
+<h3>YouTube：整站不可达</h3>
+<p>实测 <code>www.youtube.com</code>、<code>m.youtube.com</code>、<code>youtube-nocookie.com</code>、<code>youtubei.googleapis.com</code> 全部 <code>status=000</code>（超时/重置）；<code>inv.nadeko.net</code>、<code>yewtu.be</code>、<code>pipedapi.kavin.rocks</code> 三个镜像也是 000。</p>
+<p>结论：不是 API 问题，是<strong>出口网络到 Google 系整段不通</strong>。所以在 <code>probe.mjs</code> 里它只能是 <code>auth: 'proxy'</code> 一档——要么挂 HTTP 代理（<code>HTTPS_PROXY</code> 或 adapter 里 <code>dispatcher</code> 指代理），要么走浏览器（同样不通）。错误必须抛 <code>block: 出口不通</code>，不许伪装成"接口改了"。</p>
+<p>官方 API 的形状（未验证，仅台账）：<code>https://www.googleapis.com/youtube/v3/videos?chart=mostPopular&amp;regionCode=CN&amp;part=snippet,statistics&amp;key=API_KEY</code>，需要 API key 与配额（每天 10,000 单位，一次 list 花 1 单位）。</p>
+<h3>三个平台对照</h3>
+<p>| | 网关 | 鉴权 | 业务码 | 配额头 | 可达 | | --- | --- | --- | --- | --- | --- | | 爱奇艺 | <code>mesh.if.iqiyi.com</code>（Skywalker） | 无（device_id 随便给） | <code>code: A00000</code> | <strong>有</strong>（limit/remaining/reset） | ✓ | | 腾讯视频 | <code>pbaccess.video.qq.com</code>（trpc） | appID/appKey 明文 query | <code>{"ret":0}</code> 或 <code>{"data":{"errorCode":0}}</code> | 无 | ✓ | | YouTube | <code>googleapis.com</code> | API key + 配额 | HTTP 状态 | 官方配额（1万/天） | ✗ 出口不通 |</p>
+<p>已接入 <code>tools/social/probe.mjs</code> 的平台：<code>bilibili</code>、<code>douyin</code>、<code>weibo</code>、<code>tencent</code>、<code>iqiyi</code>（五家同形）。</p>
+<h2>十四、插件形态（2026-11-23 落地）</h2>
+<p>不再只有 CLI。<code>plugins/dsh-social</code> 把这套东西注册成工具，进工具表就能直接调：</p>
+<p>| 工具 | 干什么 | | --- | --- | | <code>social_platforms</code> | 列平台、鉴权方式、可用动作、已存 cookie 概况 | | <code>social_hot</code> | 某平台热榜/热词 | | <code>social_search</code> | 某平台搜词，返回 title/author/url/extra | | <code>social_text</code> | 一条内容的正文/简介 | | <code>social_login</code> | 开有头窗口停在登录页 | | <code>social_cookies</code> | 把浏览器 cookie 存进 <code>.social/cookies.json</code> |</p>
+<p>实测通过的通道（2026-11-23）：</p>
+<ul>
+<li><code>bilibili</code> hot（公开接口）／search（浏览器 DOM）／text</li>
+<li><code>weibo</code> hot（匿名 52 条）</li>
+<li><code>tencent</code>、<code>iqiyi</code> hot（热词）</li>
+<li><code>douyin</code> hot（档案登录态，抓到的是推荐流不是榜单纯排序）</li>
+<li>存档 cookie：bilibili 12 条、douyin 67 条；weibo、xiaohongshu 为 0（未登录）</li>
+<li><code>youtube</code>、<code>x</code>：出口不通，<code>auth: 'proxy'</code>，调用抛 <code>block:</code></li>
+</ul>
+<p>登录态抓取：<code>node tools/social/login.mjs &lt;platform&gt; &lt;秒数&gt;</code>，有头窗口，倒计时结束自动 dump 到 <code>.social/cookies.json</code>。</p>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

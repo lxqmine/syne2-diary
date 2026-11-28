@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>诊断：workbuddy 与「老是让我重启」</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>诊断：workbuddy 与「老是让我重启」</h1>
+<p class="meta">诊断_workbuddy与重启_v1.md　765 汉字</p>
+<h1>诊断：workbuddy 与「老是让我重启」</h1>
+<p>2026-11-21。取证脚本 <code>tools/diag/workbuddy-restart.test.mjs</code>。</p>
+<h2>一、结论先说</h2>
+<p>两件事其实是同一件事。</p>
+<p>1. <strong>workbuddy 没装坏。</strong> <code>dsh-connect-workbuddy@5.20.2</code> 在 profile 里 enabled、installed，行 <code>include:dsh-connect-workbuddy</code> 在，<code>native/turing-sdk</code> 在。 2. <strong>坏的是"更新它"这条路。</strong> 操作日志 92 条，<code>applied</code> <strong>0 次</strong>。每次更新都走同一条死路：装 → 失败（already-installed）→ 卸 → 失败（bundle-in-use / operation-error）。一步也没换成。 3. <strong>重启提示是这条死路的回声，不是 bug。</strong> 宿主的规定写死：换掉一个已装包必须重启才能加载新的模块代（<code>restart-required</code>，reason <code>host-module</code>）。workbuddy 带原生目录，正属此类。所以"要重启"永远正确——只是因为前面那步没成功，重启完还是旧的，下次再提示。</p>
+<p>一句话：<strong>不是它在重启，是它从来没成功过一次，所以永远在等重启。</strong></p>
+<h2>二、证据</h2>
+<p><code>C:\Users\admin\AppData\Roaming\dsh-desktop\plugin-operations\operations.jsonl</code>（92 条）：</p>
+<p>| 项 | 数 | |---|---| | 生效 applied | 0 | | already-installed | 22 | | operation-error | 19 | | bundle-in-use | 5 | | 「装失败→两步后卸失败」空转对 | 22 |</p>
+<p>只有两组 run：2026-11-20 14:41、2026-11-21 12:08。每组都是一口气对十几个已装包挨个做一遍。</p>
+<p>进程侧：<code>electron.exe</code> 24204；harness host 12324 监听 127.0.0.1:55791，<code>hostStartedAt 2026-11-21T12:09:46Z</code> —— 正好是他那轮操作之后重启的那一次。也就是说重启是真发生了的，只是重启没能救回一次失败的更新。</p>
+<h2>三、为什么必然失败</h2>
+<p>宿主的更新流程是"先装新的，再把旧的摘掉"。对<strong>已安装且正在运行</strong>的包，这两步都过不去：</p>
+<ul>
+<li>装新的：目标已存在 → <code>already-installed</code>。</li>
+<li>摘旧的：包正在被宿主加载 → <code>bundle-in-use</code>；或者文件被占用/目录被旁路 → <code>operation-error</code>。</li>
+</ul>
+<p>两个错都不是"暂时性故障"，重试不会变。所以循环稳定复现，每次都以"需要重启"收尾。</p>
+<h2>三点五、动手前先查了这一下（结论：不用动）</h2>
+<p><code>.generations/</code> 里的账：<code>desired.json</code> 12 条，<code>live/</code> 12 条，<strong>逐字相同</strong>；<code>staging/</code>、<code>trash/</code> 都空。</p>
+<p>意思是<strong>没有任何待生效的改动</strong>。既然没有待装的版本，"停用→重启→装"跑下去是空转——装的是已经在跑的那个版本，第一步还是 <code>already-installed</code>。</p>
+<p>所以那个重启提示不是任务，是墓碑：它记着一次从来没成功的替换。</p>
+<h2>四、能做的三件事</h2>
+<p>1. <strong>别用"全部更新"。</strong> 这是触发源。要更哪个包，单独更。 2. <strong>正确次序</strong>：停用 bundle（<code>set_bundle enabled:false</code>）→ 重启一次 → 安装新版本 → 再重启一次。停用之后包不再被加载，摘旧那步才不会撞 <code>bundle-in-use</code>。 3. <strong>绕过插件管理器</strong>：host 停着的时候直接换 <code>profiles/web/node_modules/&lt;包名&gt;</code> 目录，再启动。适合自己有包、只想换文件的情况。</p>
+<h2>五、顺手查到的另一处</h2>
+<p>启动日志里有：</p>
+<pre><code>
+launch requested (safe mode)
+safe mode: third-party web profile bundles are blocked
+warn patch: entry "redteam-mode-store" not found
+warn patch: entry "redteam-mode-ui" not found
+</code></pre>
+<p><code>dsh-purge-community</code> 的 <code>overrides</code> 里点名了 <code>redteam-store</code>、<code>redteam-ui</code>、<code>redteam-mode</code>、<code>redteam-mode-store</code>、<code>redteam-mode-ui</code> 五个条目，而这五个在 profile 里不存在。启动时找不到就 warn，本身不致命；但它一旦让宿主判定"补丁层坏了"，就会进安全模式，进安全模式的表现之一就是<strong>叫你再启动一次</strong>。这条与上面的更新死路是两个独立来源，都会长成"重启"。</p>
+<h2>六、验收</h2>
+<p><code>node tools/diag/workbuddy-restart.test.mjs</code> 现在 <strong>FAIL 2 条</strong>（applied=0、22 对空转），这是对的——测试先红。</p>
+<p>修好之后要绿的是同一份断言：</p>
+<ul>
+<li>空转对 = 0；</li>
+<li>至少一次 <code>applied</code>；</li>
+<li><code>desired.json</code> 每个包都能在 <code>node_modules</code> 找到（这条现在已经是绿的，说明盘上没缺东西，问题纯在流程）。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>

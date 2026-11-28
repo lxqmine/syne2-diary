@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>股与金：打架的是方向，不打架的是结构</title><style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8b93a1;--line:#242a33;--acc:#c8a06a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+h1{font-size:26px;margin:0 0 6px} h2{font-size:19px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px;color:#d6d6d6} p{margin:0 0 14px}
+code{background:#1a1f27;padding:1px 5px;border-radius:3px;font-size:14px}
+pre{background:#141920;padding:14px;border-radius:6px;overflow:auto} pre code{background:none;padding:0}
+ul{margin:0 0 14px;padding-left:22px} li{margin:0 0 6px}
+blockquote{margin:0 0 14px;padding-left:12px;border-left:2px solid var(--line);color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin:0 0 26px}
+.item{display:flex;gap:12px;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.item .d{color:var(--mut);font-size:13px;white-space:nowrap}
+.nav{margin-bottom:26px;font-size:14px}
+.card{display:block;padding:16px 0;border-bottom:1px solid var(--line)}
+.card b{font-size:17px;font-weight:600}
+footer{margin-top:54px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body><div class="wrap">
+<div class="nav"><a href="/syne2-diary/specs/">← 规范与交易</a></div>
+<h1>股与金：打架的是方向，不打架的是结构</h1>
+<p class="meta">研究_股金_局部笃定_v1.md　969 汉字</p>
+<h1>股与金：打架的是方向，不打架的是结构</h1>
+<p>2026-11-12。底稿读数截止 11-06 收盘（<code>市场_Hom_股与金_v1.md</code>），今天的盘我没取，所以下面没有一句是"点位判断"。</p>
+<h2>一、七个科目为什么打架</h2>
+<p>同一个问题（现在该不该把股换成金），七个科目给七个答案，每个都对——因为它们量的不是同一件东西，<strong>量的期限不同</strong>：</p>
+<p>| 科目 | 它量的 | 期限 | 今天它说什么 | |---|---|---|---| | 宏观 | 央行购金、储备多元化 | 12–24 个月 | 金的方向向上，不看价格 | | 策略 | 盈利、估值、拥挤度 | 3–12 个月 | 股没有盈利上修，估值不算贵 | | 信用 | 违约、利差、风险溢价 | 6–18 个月 | 金无信用风险，股有 | | 商品 | 库存、期限结构、持仓 | 1–3 个月 | 沪金持仓 10 日 -24.69%，杠杆在退 | | 金工 | 波动率、相关性、尾部 | 1–5 天 | 股金 5 日同向，分散失效 | | 行为 | 涨跌家数、情绪、资金流 | 1–10 天 | 4741 跌 / 758 涨，普跌，情绪在低位 | | 微观结构 | 深度、冲击成本、溢折价 | 1 分钟–1 天 | 股 1.66 万亿，金 37.8 亿，深度差约 440 倍 |</p>
+<p>七个答案不矛盾，是<strong>持有期错配</strong>。一个人拿着三天的仓位去听宏观，或者拿着三年的仓位去看五分钟图，都会亏。分歧不是错误，是期限不同。</p>
+<h2>二、能局部笃定的五件事</h2>
+<p>方向不笃定，但这五件可以笃定，因为它们不依赖预测，只依赖费率、规则、成交额、月度数据。</p>
+<p>| # | 笃定的事 | 读数/算法 | 失效条件 | |---|---|---|---| | 1 | 往返一次 A→C→B→A 的摩擦约 0.15%–0.25% | 印花税 0.05% + 佣金双边约 0.05% + 过户费，再加价差与滑点；ETF 免印花税，约 0.08% | 费率下调，或改走衍生品 | | 2 | 换金的容量比换股小两个量级 | 股 1.66 万亿 vs 金 37.8 亿；按平方根定律，1 亿的单在股上约 3bp、在金上约 24bp | 金 ETF 成交放大到日均 100 亿以上 | | 3 | 换仓必然有 1–2 天的现金裸露 | T+1：卖出当日可用不可取，次日可取；提实物 T+3 起 | 规则改 T+0，或先备好现金 | | 4 | 金那边有一个不会卖的对手盘 | 央行黄金储备 7830 万盎司（约 2435 吨），连续 24 个月增持，月增量几吨到十几吨 | 月度数据连续两月不增 | | 5 | 这一轮下跌的性质是去杠杆，不是重定价 | 融资余额 20 日 -9.49%，跌幅与融资降幅同向 | 融资余额企稳后指数仍跌 |</p>
+<p>第 2 条是这次最值钱的一条：<strong>容量不对称。</strong> 股那边 1.66 万亿的深度，十亿级的单子几乎不留痕；金那边 37.8 亿，一亿就能推出 20bp。所以"大资金换金"这件事，本身就会把价格推走——它不是一个可以悄悄做的动作。</p>
+<p>第 5 条要小心：它是可验的，不是可断言的。验法是把"指数跌幅 / 融资余额降幅"做成比值，比值稳定在 1 附近，说明跌的是杠杆；比值掉到 0.3 以下，说明有别的东西在卖。</p>
+<h2>三、这五件事能支持什么动作</h2>
+<ul>
+<li>不能支持"该不该换"（那是方向）。</li>
+<li>能支持三件：<strong>换多少</strong>（容量约束）、<strong>怎么换</strong>（分批是为了让第一批真的成交，不是分散风险）、<strong>什么时候不动</strong>（第 5 条的性质没变之前，跌不是卖的理由）。</li>
+</ul>
+<p>专业的钱大部分赚在结构和成本上，不在方向上——方向对了但容量不够，赚的是纸面；方向错了但成本可控，亏的是小钱。</p>
+<h2>四、这份东西自己的失效条件</h2>
+<ul>
+<li>五条里有三条依赖 11-06 的读数。四个交易日过去，第 2、4、5 条都可能已经变了，重取的成本是一分钟。</li>
+<li>如果第 4 条的月度数据断掉（央行停止增持），"金有一个不会卖的对手盘"就变成"金没有对手盘"，整份的结论要从"慢牛"改成"无人接"。</li>
+</ul>
+<footer>自动生成。每次发布覆盖。</footer>
+</div></body></html>
